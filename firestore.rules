@@ -1,0 +1,180 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (uid)
+    // Fields:
+    //   - uid: string (required, immutable)
+    //   - email: string (required, format: email)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional, format: url)
+    //   - role: string (required, enum: ['admin', 'user'])
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: submissions
+    // Document ID: submissionId
+    // Fields:
+    //   - id: string (required, immutable)
+    //   - userId: string (required, immutable)
+    //   - fullName: string (required, size: 1-100)
+    //   - email: string (required, format: email)
+    //   - phone: string (optional, size: 0-20)
+    //   - location: string (optional, size: 0-200)
+    //   - category: string (required, size: 1-50)
+    //   - brand: string (optional, size: 0-50)
+    //   - model: string (optional, size: 0-50)
+    //   - condition: string (optional, size: 0-50)
+    //   - estimatedAge: string (optional, size: 0-50)
+    //   - collectionPreference: string (optional, size: 0-50)
+    //   - description: string (optional, size: 0-2000)
+    //   - images: list (optional, size: 0-5, items: string)
+    //   - status: string (required, enum: ['pending', 'approved', 'rejected', 'completed'])
+    //   - referenceNumber: string (required, immutable)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: blogPosts
+    // Document ID: postId
+    // Fields:
+    //   - id: string (required, immutable)
+    //   - title: string (required, size: 1-200)
+    //   - slug: string (required, size: 1-200, unique)
+    //   - content: string (required, size: 1-50000)
+    //   - excerpt: string (optional, size: 0-500)
+    //   - author: string (required, size: 1-100)
+    //   - authorPhoto: string (optional, format: url)
+    //   - category: string (optional, size: 0-50)
+    //   - date: string (required, size: 1-50)
+    //   - readTime: string (optional, size: 0-50)
+    //   - image: string (optional, format: url)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: enquiries
+    // Document ID: enquiryId
+    // Fields:
+    //   - name: string (required, size: 1-100)
+    //   - email: string (required, format: email)
+    //   - phone: string (optional, size: 0-20)
+    //   - subject: string (required, size: 1-200)
+    //   - message: string (required, size: 1-2000)
+    //   - type: string (required, enum: ['GENERAL', 'PARTNERSHIP', 'CORPORATE'])
+    //   - status: string (required, enum: ['NEW', 'READ', 'REPLIED', 'ARCHIVED'])
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "petar.dekanovic@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             (data.role == 'user' || data.role == 'admin') &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidSubmission(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'fullName', 'email', 'phone', 'location', 'category', 'brand', 'model', 'condition', 'estimatedAge', 'collectionPreference', 'description', 'images', 'status', 'referenceNumber', 'createdAt']) &&
+             data.id is string &&
+             data.userId == request.auth.uid &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+             isValidEmail(data.email) &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 50 &&
+             data.status in ['pending', 'approved', 'rejected', 'completed'] &&
+             data.referenceNumber is string &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidBlogPost(data) {
+      return hasOnlyAllowedFields(['id', 'title', 'slug', 'content', 'excerpt', 'author', 'authorPhoto', 'category', 'date', 'readTime', 'image', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.slug is string && data.slug.size() > 0 && data.slug.size() <= 200 &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 50000 &&
+             data.author is string && data.author.size() > 0 && data.author.size() <= 100 &&
+             data.date is string &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidEnquiry(data) {
+      return hasOnlyAllowedFields(['name', 'email', 'phone', 'subject', 'message', 'type', 'status', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             isValidEmail(data.email) &&
+             data.subject is string && data.subject.size() > 0 && data.subject.size() <= 200 &&
+             data.message is string && data.message.size() > 0 && data.message.size() <= 2000 &&
+             data.type in ['GENERAL', 'PARTNERSHIP', 'CORPORATE'] &&
+             data.status in ['NEW', 'READ', 'REPLIED', 'ARCHIVED'] &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidSubmission(request.resource.data) && request.resource.data.status == 'pending';
+      allow update: if isAuthenticated() && (
+        (isOwner(resource.data.userId) && isValidSubmission(request.resource.data) && request.resource.data.status == resource.data.status) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /blogPosts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin() && isValidBlogPost(request.resource.data);
+    }
+
+    match /enquiries/{enquiryId} {
+      allow read: if isAdmin();
+      allow create: if isValidEnquiry(request.resource.data) && request.resource.data.status == 'NEW';
+      allow update, delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "User profile information and roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique user ID from Firebase Auth." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "photoURL": { "type": "string", "format": "uri", "description": "URL to the user's profile photo." },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "The user's role in the application." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user profile was created." }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "submission": {
+      "title": "Donation/Resale Submission",
+      "description": "A request for device donation or resale.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique ID of the submission." },
+        "userId": { "type": "string", "description": "The ID of the user who submitted the request." },
+        "fullName": { "type": "string", "description": "Full name of the submitter." },
+        "email": { "type": "string", "format": "email", "description": "Email of the submitter." },
+        "phone": { "type": "string", "description": "Phone number of the submitter." },
+        "location": { "type": "string", "description": "Location for collection or drop-off." },
+        "category": { "type": "string", "description": "Device category (e.g., Laptop, Smartphone)." },
+        "brand": { "type": "string", "description": "Device brand." },
+        "model": { "type": "string", "description": "Device model." },
+        "condition": { "type": "string", "description": "Condition of the device." },
+        "estimatedAge": { "type": "string", "description": "Estimated age of the device." },
+        "collectionPreference": { "type": "string", "description": "Preference for collection or drop-off." },
+        "description": { "type": "string", "description": "Additional details about the device." },
+        "images": { "type": "array", "items": { "type": "string" }, "description": "URLs of device images." },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "completed"], "description": "Current status of the submission." },
+        "referenceNumber": { "type": "string", "description": "Unique reference number for tracking." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the submission was created." }
+      },
+      "required": ["userId", "fullName", "email", "category", "status", "referenceNumber", "createdAt"]
+    },
+    "blogPost": {
+      "title": "Blog Post",
+      "description": "An article published on the blog.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique ID of the blog post." },
+        "title": { "type": "string", "description": "The title of the post." },
+        "slug": { "type": "string", "description": "The URL-friendly slug of the post." },
+        "content": { "type": "string", "description": "The full content of the post in Markdown." },
+        "excerpt": { "type": "string", "description": "A short summary of the post." },
+        "author": { "type": "string", "description": "The name of the author." },
+        "authorPhoto": { "type": "string", "format": "uri", "description": "URL to the author's photo." },
+        "category": { "type": "string", "description": "The category of the post." },
+        "date": { "type": "string", "description": "The publication date." },
+        "readTime": { "type": "string", "description": "Estimated reading time." },
+        "image": { "type": "string", "format": "uri", "description": "URL to the featured image." },
+        "youtubeUrl": { "type": "string", "format": "uri", "description": "Optional YouTube video URL." },
+        "youtubeVideoId": { "type": "string", "description": "The extracted YouTube video ID." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the post was created." }
+      },
+      "required": ["title", "slug", "content", "author", "date", "createdAt"]
+    },
+    "enquiry": {
+      "title": "Enquiry",
+      "description": "A contact form enquiry.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["GENERAL", "PARTNERSHIP", "CORPORATE"] },
+        "status": { "type": "string", "enum": ["NEW", "READ", "REPLIED", "ARCHIVED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "subject", "message", "type", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profile documents."
+    },
+    "/submissions/{submissionId}": {
+      "schema": "submission",
+      "description": "Donation and resale requests."
+    },
+    "/blogPosts/{postId}": {
+      "schema": "blogPost",
+      "description": "Blog articles."
+    },
+    "/enquiries/{enquiryId}": {
+      "schema": "enquiry",
+      "description": "Contact form enquiries."
+    }
+  }
+}

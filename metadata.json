@@ -1,0 +1,9 @@
+{
+  "name": "CompCharity",
+  "description": "A production-ready tech donation and resale platform in Ireland, focused on digital inclusion and e-waste reduction.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
