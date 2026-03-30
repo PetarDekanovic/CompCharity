@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -104,22 +105,63 @@ async function startServer() {
 
   // Google OAuth
   app.get("/api/auth/google/url", (req, res) => {
-    const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      console.error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET");
+      return res.status(500).json({ error: "Google OAuth is not configured on the server. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Secrets." });
+    }
+
+    const host = req.headers["x-forwarded-host"] as string || req.get("host") || "";
+    // Force https for all non-localhost environments (required by Google)
+    const protocol = host.includes("localhost") ? "http" : "https";
+    
+    // Use dynamic host in preview/dev environments to keep OAuth flow in the same environment
+    const isPreview = host.includes(".run.app") || host.includes("localhost");
+    const baseUrl = (isPreview ? `${protocol}://${host}` : (process.env.APP_URL || `${protocol}://${host}`)).replace(/\/$/, "");
     const redirectUri = `${baseUrl}/api/auth/callback/google`;
+    
+    console.log("Generating Google Auth URL:", {
+      host,
+      protocol,
+      isPreview,
+      baseUrl,
+      redirectUri,
+      envAppUrl: process.env.APP_URL,
+      forwardedHost: req.headers["x-forwarded-host"],
+      forwardedProto: req.headers["x-forwarded-proto"]
+    });
+
     const url = googleClient.generateAuthUrl({
       access_type: "offline",
       scope: ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
       redirect_uri: redirectUri,
     });
-    res.json({ url });
+    res.json({ url, redirectUri }); // Return redirectUri for debugging if needed
   });
 
   app.get("/api/auth/callback/google", async (req, res) => {
     const { code } = req.query;
-    const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+    const host = req.headers["x-forwarded-host"] as string || req.get("host") || "";
+    // Force https for all non-localhost environments (required by Google)
+    const protocol = host.includes("localhost") ? "http" : "https";
+    
+    // Must match the logic in /api/auth/google/url exactly
+    const isPreview = host.includes(".run.app") || host.includes("localhost");
+    const baseUrl = (isPreview ? `${protocol}://${host}` : (process.env.APP_URL || `${protocol}://${host}`)).replace(/\/$/, "");
     const redirectUri = `${baseUrl}/api/auth/callback/google`;
 
+    console.log("Handling Google Callback:", {
+      host,
+      protocol,
+      isPreview,
+      baseUrl,
+      redirectUri
+    });
+
     try {
+      if (!code) {
+        throw new Error("No code provided in callback");
+      }
+
       const { tokens } = await googleClient.getToken({
         code: code as string,
         redirect_uri: redirectUri,
@@ -132,15 +174,34 @@ async function startServer() {
 
       const { email, name, sub: googleId } = userInfoResponse.data as any;
 
-      let user = await prisma.user.findUnique({ where: { email } });
+      if (!email) {
+        throw new Error("No email returned from Google");
+      }
+
+      let user = await prisma.user.findFirst({ 
+        where: { 
+          OR: [
+            { googleId },
+            { email }
+          ]
+        } 
+      });
 
       if (!user) {
         user = await prisma.user.create({
           data: {
             email,
-            name,
+            name: name || email.split('@')[0],
+            googleId,
             role: "USER",
+            password: await bcrypt.hash(Math.random().toString(36), 10), // Random password for OAuth users
           },
+        });
+      } else if (!user.googleId) {
+        // Link existing email account to Google ID
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId }
         });
       }
 
@@ -148,7 +209,18 @@ async function startServer() {
 
       res.send(`
         <html>
+          <head>
+            <title>Authentication Successful</title>
+            <style>
+              body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f9fafb; color: #111827; }
+              .card { background: white; padding: 2rem; border-radius: 1rem; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); text-align: center; }
+            </style>
+          </head>
           <body>
+            <div class="card">
+              <h2>Authentication Successful</h2>
+              <p>Closing window and redirecting...</p>
+            </div>
             <script>
               if (window.opener) {
                 window.opener.postMessage({ 
@@ -158,16 +230,33 @@ async function startServer() {
                 }, '*');
                 window.close();
               } else {
-                window.location.href = '${process.env.APP_URL || "/"}';
+                window.location.href = '${process.env.APP_URL || "/dashboard"}';
               }
             </script>
-            <p>Authentication successful. This window should close automatically.</p>
           </body>
         </html>
       `);
-    } catch (error) {
-      console.error("Google OAuth Error:", error);
-      res.status(500).send("Authentication failed");
+    } catch (error: any) {
+      console.error("Google OAuth Error Details:", {
+        message: error.message,
+        response: error.response?.data,
+        stack: error.stack
+      });
+      res.status(500).send(`
+        <html>
+          <head><title>Authentication Failed</title></head>
+          <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fff1f2; color: #991b1b;">
+            <div style="background: white; padding: 2rem; border-radius: 1rem; border: 1px solid #fecaca; text-align: center; max-width: 400px;">
+              <h2 style="margin-top: 0;">Authentication Failed</h2>
+              <p>We encountered an error while signing you in with Google.</p>
+              <p style="font-size: 0.875rem; color: #ef4444; background: #fef2f2; padding: 0.5rem; border-radius: 0.5rem; word-break: break-all;">
+                ${error.message || "Unknown error"}
+              </p>
+              <button onclick="window.close()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">Close Window</button>
+            </div>
+          </body>
+        </html>
+      `);
     }
   });
 

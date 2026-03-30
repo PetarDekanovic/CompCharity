@@ -40,8 +40,13 @@ const Auth = () => {
     try {
       // Fetch the OAuth URL from the backend
       const response = await fetch('/api/auth/google/url');
-      if (!response.ok) throw new Error('Failed to get auth URL');
-      const { url } = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get auth URL');
+      }
+      const { url, redirectUri } = await response.json();
+
+      console.log("Initiating Google Login with Redirect URI:", redirectUri);
 
       // Open the OAuth provider's URL directly in a popup
       const authWindow = window.open(
@@ -53,9 +58,9 @@ const Auth = () => {
       if (!authWindow) {
         toast.error("Popup blocked. Please allow popups for this site.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google login error:", error);
-      toast.error("Failed to sign in with Google");
+      toast.error(error.message || "Failed to sign in with Google");
     }
   };
 
