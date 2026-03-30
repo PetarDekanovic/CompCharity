@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { db, collection, query, onSnapshot, doc, updateDoc, addDoc, deleteDoc, arrayUnion, handleFirestoreError, OperationType } from "../lib/firebase";
 import { summarizeSubmission } from "../services/geminiService";
 
 // --- Helper Functions ---
@@ -19,6 +18,23 @@ const getYouTubeId = (url: string) => {
 
 const getYouTubeThumbnail = (videoId: string) => {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+};
+
+const apiFetch = async (url: string, options: any = {}) => {
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+  if (token) {
+    (headers as any)["Authorization"] = `Bearer ${token}`;
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "API request failed");
+  }
+  return response.json();
 };
 
 // --- Admin Components ---
@@ -33,11 +49,11 @@ function AdminBlog() {
     slug: "",
     content: "",
     excerpt: "",
-    author: "CompCharity Team",
-    category: "Technology",
-    image: "",
+    featuredImage: "",
     youtubeUrl: "",
-    readTime: "5 min read"
+    category: "Technology",
+    readTime: "5 min read",
+    published: true,
   });
 
   const location = useLocation();
@@ -48,87 +64,68 @@ function AdminBlog() {
       setIsEditing(true);
       setCurrentPost(null);
       setFormData({
-        title: "", slug: "", content: "", excerpt: "", author: "CompCharity Team",
-        category: "Technology", image: "", youtubeUrl: "", readTime: "5 min read"
+        title: "", slug: "", content: "", excerpt: "", featuredImage: "", youtubeUrl: "", category: "Technology", readTime: "5 min read", published: true
       });
     }
   }, [location.search]);
 
+  const fetchPosts = async () => {
+    try {
+      const data = await apiFetch("/api/admin/blog");
+      setPosts(data);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const q = query(collection(db, "blogPosts"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setPosts(docs.sort((a: any, b: any) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      }));
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, "blogPosts");
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    fetchPosts();
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    let youtubeVideoId = "";
-    let finalImage = formData.image;
+    let finalImage = formData.featuredImage;
 
     if (formData.youtubeUrl) {
       const vidId = getYouTubeId(formData.youtubeUrl);
-      if (vidId) {
-        youtubeVideoId = vidId;
-        // If no image is provided, use YouTube thumbnail
-        if (!finalImage) {
-          finalImage = getYouTubeThumbnail(vidId);
-        }
+      if (vidId && !finalImage) {
+        finalImage = getYouTubeThumbnail(vidId);
       }
     }
 
-    const postData = {
-      ...formData,
-      image: finalImage,
-      youtubeVideoId,
-      slug: formData.slug || formData.title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, ""),
-      date: format(new Date(), "MMMM d, yyyy"),
-      updatedAt: new Date()
-    };
-
     try {
       if (currentPost) {
-        await updateDoc(doc(db, "blogPosts", currentPost.id), postData);
+        await apiFetch(`/api/admin/blog/${currentPost.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ ...formData, featuredImage: finalImage }),
+        });
         toast.success("Blog post updated!");
       } else {
-        await addDoc(collection(db, "blogPosts"), {
-          ...postData,
-          createdAt: new Date()
+        await apiFetch("/api/admin/blog", {
+          method: "POST",
+          body: JSON.stringify({ ...formData, featuredImage: finalImage }),
         });
         toast.success("Blog post created!");
       }
       setIsEditing(false);
       setCurrentPost(null);
-      setFormData({
-        title: "", slug: "", content: "", excerpt: "", author: "CompCharity Team",
-        category: "Technology", image: "", youtubeUrl: "", readTime: "5 min read"
-      });
-    } catch (error) {
-      handleFirestoreError(error, currentPost ? OperationType.UPDATE : OperationType.WRITE, "blogPosts");
+      fetchPosts();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this post?")) return;
     try {
-      await deleteDoc(doc(db, "blogPosts", id));
+      await apiFetch(`/api/admin/blog/${id}`, { method: "DELETE" });
       toast.success("Post deleted");
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `blogPosts/${id}`);
+      fetchPosts();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -139,11 +136,11 @@ function AdminBlog() {
       slug: post.slug || "",
       content: post.content || "",
       excerpt: post.excerpt || "",
-      author: post.author || "CompCharity Team",
-      category: post.category || "Technology",
-      image: post.image || "",
+      featuredImage: post.featuredImage || "",
       youtubeUrl: post.youtubeUrl || "",
-      readTime: post.readTime || "5 min read"
+      category: post.category || "Technology",
+      readTime: post.readTime || "5 min read",
+      published: post.published ?? true,
     });
     setIsEditing(true);
   };
@@ -204,8 +201,8 @@ function AdminBlog() {
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Featured Image URL</label>
                 <input
                   type="text"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  value={formData.featuredImage}
+                  onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
                   placeholder="Leave empty to use YouTube thumbnail if URL provided"
                   className="w-full px-5 py-3 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
@@ -276,11 +273,11 @@ function AdminBlog() {
             <div key={post.id} className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden group flex flex-col">
               <div className="aspect-video relative overflow-hidden">
                 <img 
-                  src={post.image || "https://picsum.photos/seed/tech/800/600"} 
+                  src={post.featuredImage || "https://picsum.photos/seed/tech/800/600"} 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                   referrerPolicy="no-referrer"
                 />
-                {post.youtubeVideoId && (
+                {post.youtubeUrl && (
                   <div className="absolute top-4 right-4 bg-red-600 text-white p-2 rounded-xl shadow-lg">
                     <Zap className="w-4 h-4" />
                   </div>
@@ -289,7 +286,7 @@ function AdminBlog() {
               <div className="p-8 flex-grow flex flex-col">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded-lg">
-                    {post.category}
+                    {post.category || "General"}
                   </span>
                   <div className="flex gap-2">
                     <button onClick={() => startEdit(post)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
@@ -303,7 +300,9 @@ function AdminBlog() {
                 <h3 className="text-xl font-bold text-gray-900 mb-4 line-clamp-2">{post.title}</h3>
                 <p className="text-sm text-gray-500 line-clamp-3 mb-6 flex-grow">{post.excerpt}</p>
                 <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{post.date}</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    {format(new Date(post.createdAt), "MMM d, yyyy")}
+                  </div>
                   <Link to={`/blog/${post.slug}`} className="text-blue-600 font-bold text-sm flex items-center gap-2 group/link">
                     View <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                   </Link>
@@ -372,29 +371,22 @@ function AdminSidebar() {
   );
 }
 
-function AdminSubmissions({ submissions, formatDate }: { submissions: any[], formatDate: (t: any) => string }) {
+function AdminSubmissions({ submissions, refreshSubmissions, formatDate }: { submissions: any[], refreshSubmissions: () => void, formatDate: (t: any) => string }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [summarizingId, setSummarizingId] = useState<string | null>(null);
 
   const updateStatus = async (id: string, status: string) => {
-    const noteContent = prompt("Add a note for the user (optional):");
+    const note = prompt("Add a note for the user (optional):");
     try {
-      const submissionRef = doc(db, "submissions", id);
-      const updateData: any = { status };
-      
-      if (noteContent) {
-        updateData.notes = arrayUnion({
-          content: noteContent,
-          createdAt: new Date(),
-          isAdminOnly: false,
-        });
-      }
-
-      await updateDoc(submissionRef, updateData);
+      await apiFetch(`/api/admin/submissions/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status, note }),
+      });
       toast.success(`Status updated to ${status}`);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `submissions/${id}`);
+      refreshSubmissions();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -403,17 +395,15 @@ function AdminSubmissions({ submissions, formatDate }: { submissions: any[], for
     try {
       const summary = await summarizeSubmission(submission);
       if (summary) {
-        // We could save this to Firestore, but for now just show it in a toast or alert
-        // Let's add it to the submission notes in Firestore for future reference
-        const submissionRef = doc(db, "submissions", submission.id);
-        await updateDoc(submissionRef, {
-          notes: arrayUnion({
-            content: `[AI Summary]: ${summary}`,
-            createdAt: new Date(),
-            isAdminOnly: true,
-          })
+        await apiFetch(`/api/admin/submissions/${submission.id}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ 
+            status: submission.status, 
+            note: `[AI Summary]: ${summary}` 
+          }),
         });
         toast.success("AI Summary generated and added to internal notes!");
+        refreshSubmissions();
       }
     } catch (error) {
       console.error("Summary Error:", error);
@@ -563,35 +553,7 @@ function AdminSubmissions({ submissions, formatDate }: { submissions: any[], for
   );
 }
 
-function AdminOverview({ submissions, formatDate }: { submissions: any[], formatDate: (t: any) => string }) {
-  const [stats, setStats] = useState({
-    submissions: 0,
-    users: 0,
-    blogPosts: 0,
-    enquiries: 0
-  });
-
-  useEffect(() => {
-    // In a real app, we'd use a cloud function or separate stats collection
-    // For now, we'll just listen to the collections
-    const unsubUsers = onSnapshot(collection(db, "users"), (s) => {
-      setStats(prev => ({ ...prev, users: s.size }));
-    });
-    const unsubBlog = onSnapshot(collection(db, "blogPosts"), (s) => {
-      setStats(prev => ({ ...prev, blogPosts: s.size }));
-    });
-    // enquiries not implemented yet
-    
-    return () => {
-      unsubUsers();
-      unsubBlog();
-    };
-  }, []);
-
-  useEffect(() => {
-    setStats(prev => ({ ...prev, submissions: submissions.length }));
-  }, [submissions]);
-
+function AdminOverview({ submissions, stats, formatDate }: { submissions: any[], stats: any, formatDate: (t: any) => string }) {
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -685,38 +647,31 @@ function AdminEnquiries() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("ALL");
 
+  const fetchEnquiries = async () => {
+    try {
+      const data = await apiFetch("/api/admin/enquiries");
+      setEnquiries(data);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const q = query(collection(db, "enquiries"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      // Sort by createdAt descending
-      const sortedDocs = docs.sort((a: any, b: any) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      });
-
-      setEnquiries(sortedDocs);
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, "enquiries");
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    fetchEnquiries();
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const enquiryRef = doc(db, "enquiries", id);
-      await updateDoc(enquiryRef, { status });
+      await apiFetch(`/api/admin/enquiries/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
       toast.success(`Enquiry marked as ${status}`);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `enquiries/${id}`);
+      fetchEnquiries();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -813,55 +768,371 @@ function AdminEnquiries() {
   );
 }
 
+function AdminUsers() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUsers = async () => {
+    try {
+      const data = await apiFetch("/api/admin/users");
+      setUsers(data);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  if (loading) return <Loader2 className="w-8 h-8 animate-spin mx-auto mt-12" />;
+
+  return (
+    <div className="space-y-8">
+      <h1 className="text-2xl font-extrabold text-gray-900">User Management</h1>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-100 text-left">
+            <tr>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">User</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {users.map((user) => (
+              <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                      {user.name?.[0] || user.email?.[0]}
+                    </div>
+                    <span className="font-medium text-gray-900">{user.name || "Anonymous"}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                    {user.role}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-gray-500 text-sm">
+                  {format(new Date(user.createdAt), "MMM d, yyyy")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AdminFAQ() {
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentFaq, setCurrentFaq] = useState<any>(null);
+  const [formData, setFormData] = useState({ question: "", answer: "", order: 0 });
+
+  const fetchFaqs = async () => {
+    try {
+      const data = await apiFetch("/api/admin/faq");
+      setFaqs(data);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (currentFaq) {
+        await apiFetch(`/api/admin/faq/${currentFaq.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(formData),
+        });
+        toast.success("FAQ updated!");
+      } else {
+        await apiFetch("/api/admin/faq", {
+          method: "POST",
+          body: JSON.stringify(formData),
+        });
+        toast.success("FAQ created!");
+      }
+      setIsEditing(false);
+      setCurrentFaq(null);
+      setFormData({ question: "", answer: "", order: 0 });
+      fetchFaqs();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure?")) return;
+    try {
+      await apiFetch(`/api/admin/faq/${id}`, { method: "DELETE" });
+      toast.success("FAQ deleted");
+      fetchFaqs();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  if (loading) return <Loader2 className="w-8 h-8 animate-spin mx-auto mt-12" />;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-extrabold text-gray-900">FAQ Management</h1>
+        <button onClick={() => { setIsEditing(true); setCurrentFaq(null); setFormData({ question: "", answer: "", order: faqs.length }); }} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+          <Plus className="w-4 h-4" /> Add FAQ
+        </button>
+      </div>
+
+      {isEditing && (
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
+              <input type="text" required value={formData.question} onChange={(e) => setFormData({ ...formData, question: e.target.value })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
+              <textarea required rows={4} value={formData.answer} onChange={(e) => setFormData({ ...formData, answer: e.target.value })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
+              <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">Save FAQ</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {faqs.map((faq) => (
+          <div key={faq.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-start">
+            <div className="flex-grow">
+              <h3 className="font-bold text-gray-900">{faq.question}</h3>
+              <p className="text-gray-600 mt-1">{faq.answer}</p>
+            </div>
+            <div className="flex gap-2 ml-4">
+              <button onClick={() => { setCurrentFaq(faq); setFormData({ question: faq.question, answer: faq.answer, order: faq.order }); setIsEditing(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit className="w-4 h-4" /></button>
+              <button onClick={() => handleDelete(faq.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AdminTestimonials() {
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentTestimonial, setCurrentTestimonial] = useState<any>(null);
+  const [formData, setFormData] = useState({ name: "", role: "", content: "", rating: 5, image: "" });
+
+  const fetchTestimonials = async () => {
+    try {
+      const data = await apiFetch("/api/admin/testimonials");
+      setTestimonials(data);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (currentTestimonial) {
+        await apiFetch(`/api/admin/testimonials/${currentTestimonial.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(formData),
+        });
+        toast.success("Testimonial updated!");
+      } else {
+        await apiFetch("/api/admin/testimonials", {
+          method: "POST",
+          body: JSON.stringify(formData),
+        });
+        toast.success("Testimonial created!");
+      }
+      setIsEditing(false);
+      setCurrentTestimonial(null);
+      setFormData({ name: "", role: "", content: "", rating: 5, image: "" });
+      fetchTestimonials();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure?")) return;
+    try {
+      await apiFetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
+      toast.success("Testimonial deleted");
+      fetchTestimonials();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  if (loading) return <Loader2 className="w-8 h-8 animate-spin mx-auto mt-12" />;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-extrabold text-gray-900">Testimonials Management</h1>
+        <button onClick={() => { setIsEditing(true); setCurrentTestimonial(null); setFormData({ name: "", role: "", content: "", rating: 5, image: "" }); }} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+          <Plus className="w-4 h-4" /> Add Testimonial
+        </button>
+      </div>
+
+      {isEditing && (
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <input type="text" required value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+              <textarea required rows={3} value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Rating (1-5)</label>
+                <input type="number" min="1" max="5" required value={formData.rating} onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
+              <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">Save Testimonial</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {testimonials.map((t) => (
+          <div key={t.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden">
+                  {t.image ? <img src={t.image} alt={t.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400"><Users className="w-6 h-6" /></div>}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">{t.name}</h3>
+                  <p className="text-sm text-gray-500">{t.role}</p>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">"{t.content}"</p>
+              <div className="flex gap-1 mt-3">
+                {[...Array(t.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button onClick={() => { setCurrentTestimonial(t); setFormData({ name: t.name, role: t.role, content: t.content, rating: t.rating, image: t.image || "" }); setIsEditing(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit className="w-4 h-4" /></button>
+              <button onClick={() => handleDelete(t.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // --- Main Admin Page ---
 
 export default function Admin() {
   const [submissions, setSubmissions] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    submissions: 0,
+    users: 0,
+    blogPosts: 0,
+    enquiries: 0
+  });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const q = query(collection(db, "submissions"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      // Sort by createdAt descending
-      const sortedDocs = docs.sort((a: any, b: any) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
+  const fetchData = async () => {
+    try {
+      const [subs, users, posts, enqs] = await Promise.all([
+        apiFetch("/api/admin/submissions"),
+        apiFetch("/api/admin/users"),
+        apiFetch("/api/admin/blog"),
+        apiFetch("/api/admin/enquiries"),
+      ]);
+      setSubmissions(subs);
+      setStats({
+        submissions: subs.length,
+        users: users.length,
+        blogPosts: posts.length,
+        enquiries: enqs.length,
       });
-
-      setSubmissions(sortedDocs);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
       setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, "submissions");
-      setLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    fetchData();
   }, []);
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return "N/A";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return format(date, "MMM d, yyyy");
+  const formatDate = (dateString: any) => {
+    if (!dateString) return "N/A";
+    return format(new Date(dateString), "MMM d, yyyy");
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
       <div className="flex-grow p-12">
         <Routes>
-          <Route path="/" element={<AdminOverview submissions={submissions} formatDate={formatDate} />} />
-          <Route path="/submissions" element={<AdminSubmissions submissions={submissions} formatDate={formatDate} />} />
-          <Route path="/users" element={<div>Users Management (CRUD)</div>} />
+          <Route path="/" element={<AdminOverview submissions={submissions} stats={stats} formatDate={formatDate} />} />
+          <Route path="/submissions" element={<AdminSubmissions submissions={submissions} refreshSubmissions={fetchData} formatDate={formatDate} />} />
+          <Route path="/users" element={<AdminUsers />} />
           <Route path="/blog" element={<AdminBlog />} />
           <Route path="/enquiries" element={<AdminEnquiries />} />
-          <Route path="/faq" element={<div>FAQ Management</div>} />
-          <Route path="/testimonials" element={<div>Testimonials Management</div>} />
+          <Route path="/faq" element={<AdminFAQ />} />
+          <Route path="/testimonials" element={<AdminTestimonials />} />
         </Routes>
       </div>
     </div>

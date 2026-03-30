@@ -267,6 +267,122 @@ async function startServer() {
     res.json(submission);
   });
 
+  app.get("/api/admin/users", authenticate, isAdmin, async (req, res) => {
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(users);
+  });
+
+  app.get("/api/admin/enquiries", authenticate, isAdmin, async (req, res) => {
+    const enquiries = await prisma.contactMessage.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(enquiries);
+  });
+
+  app.patch("/api/admin/enquiries/:id/status", authenticate, isAdmin, async (req, res) => {
+    const { status } = req.body;
+    const enquiry = await prisma.contactMessage.update({
+      where: { id: req.params.id },
+      data: { status },
+    });
+    res.json(enquiry);
+  });
+
+  app.get("/api/admin/blog", authenticate, isAdmin, async (req, res) => {
+    const posts = await prisma.blogPost.findMany({
+      include: { category: true, author: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(posts);
+  });
+
+  app.post("/api/admin/blog", authenticate, isAdmin, async (req: any, res) => {
+    const { title, slug, content, excerpt, featuredImage, published, categoryId } = req.body;
+    const post = await prisma.blogPost.create({
+      data: {
+        title,
+        slug: slug || title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, ""),
+        content,
+        excerpt,
+        featuredImage,
+        published: published ?? true,
+        authorId: req.user.id,
+        categoryId,
+      },
+    });
+    res.json(post);
+  });
+
+  app.patch("/api/admin/blog/:id", authenticate, isAdmin, async (req, res) => {
+    const { title, slug, content, excerpt, featuredImage, published, categoryId } = req.body;
+    const post = await prisma.blogPost.update({
+      where: { id: req.params.id },
+      data: { title, slug, content, excerpt, featuredImage, published, categoryId },
+    });
+    res.json(post);
+  });
+
+  app.delete("/api/admin/blog/:id", authenticate, isAdmin, async (req, res) => {
+    await prisma.blogPost.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  });
+
+  app.get("/api/admin/faq", authenticate, isAdmin, async (req, res) => {
+    const faqs = await prisma.fAQItem.findMany({ orderBy: { order: "asc" } });
+    res.json(faqs);
+  });
+
+  app.post("/api/admin/faq", authenticate, isAdmin, async (req, res) => {
+    const { question, answer, order } = req.body;
+    const faq = await prisma.fAQItem.create({
+      data: { question, answer, order: order || 0 },
+    });
+    res.json(faq);
+  });
+
+  app.patch("/api/admin/faq/:id", authenticate, isAdmin, async (req, res) => {
+    const { question, answer, order } = req.body;
+    const faq = await prisma.fAQItem.update({
+      where: { id: req.params.id },
+      data: { question, answer, order },
+    });
+    res.json(faq);
+  });
+
+  app.delete("/api/admin/faq/:id", authenticate, isAdmin, async (req, res) => {
+    await prisma.fAQItem.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  });
+
+  app.get("/api/admin/testimonials", authenticate, isAdmin, async (req, res) => {
+    const testimonials = await prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } });
+    res.json(testimonials);
+  });
+
+  app.post("/api/admin/testimonials", authenticate, isAdmin, async (req, res) => {
+    const { name, role, content, rating, image } = req.body;
+    const testimonial = await prisma.testimonial.create({
+      data: { name, role, content, rating: rating || 5, image },
+    });
+    res.json(testimonial);
+  });
+
+  app.patch("/api/admin/testimonials/:id", authenticate, isAdmin, async (req, res) => {
+    const { name, role, content, rating, image } = req.body;
+    const testimonial = await prisma.testimonial.update({
+      where: { id: req.params.id },
+      data: { name, role, content, rating, image },
+    });
+    res.json(testimonial);
+  });
+
+  app.delete("/api/admin/testimonials/:id", authenticate, isAdmin, async (req, res) => {
+    await prisma.testimonial.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  });
+
   // FAQ
   app.get("/api/faq", async (req, res) => {
     const faqs = await prisma.fAQItem.findMany({ orderBy: { order: "asc" } });
