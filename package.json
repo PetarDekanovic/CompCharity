@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "prisma generate && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:vite --external:@prisma/client --external:sharp --external:bcryptjs --external:jsonwebtoken --external:multer --external:google-auth-library --external:path --external:url --external:fs --external:express",
+    "build": "prisma generate && prisma db push --accept-data-loss && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:vite --external:@prisma/client --external:sharp --external:bcryptjs --external:jsonwebtoken --external:multer --external:google-auth-library --external:path --external:url --external:fs --external:express",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "preview": "vite preview",

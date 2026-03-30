@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "compcharity-super-secret-key";
 
 const googleClient = new OAuth2Client(
@@ -54,6 +54,11 @@ const upload = multer({
 async function startServer() {
   const app = express();
   app.use(express.json());
+
+  // Health check for production
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", env: process.env.NODE_ENV });
+  });
 
   // Static files for uploads
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -505,7 +510,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   });
 }
 
