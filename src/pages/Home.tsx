@@ -69,7 +69,7 @@ export default function Home() {
                 transition={{ delay: 0.9, duration: 0.8 }}
                 className="text-xl text-gray-500 mb-12 leading-relaxed max-w-lg font-medium"
               >
-                We turn unused technology into meaningful opportunities. Bridging the digital divide by refurbishing and donating tech to those in need.
+                We turn unused technology into meaningful opportunities. Bridging the digital divide by refurbishing and donating tech to those in need. Every student has access to technology.
               </motion.p>
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
