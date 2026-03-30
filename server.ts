@@ -104,7 +104,7 @@ async function startServer() {
 
   // Google OAuth
   app.get("/api/auth/google/url", (req, res) => {
-    const baseUrl = (process.env.APP_URL || "").replace(/\/$/, "");
+    const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
     const redirectUri = `${baseUrl}/api/auth/callback/google`;
     const url = googleClient.generateAuthUrl({
       access_type: "offline",
@@ -116,7 +116,7 @@ async function startServer() {
 
   app.get("/api/auth/callback/google", async (req, res) => {
     const { code } = req.query;
-    const baseUrl = (process.env.APP_URL || "").replace(/\/$/, "");
+    const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
     const redirectUri = `${baseUrl}/api/auth/callback/google`;
 
     try {
