@@ -11,6 +11,15 @@ import fs from "fs";
 import sharp from "sharp";
 import { OAuth2Client } from "google-auth-library";
 
+// Global error handlers for production stability
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("UNHANDLED REJECTION at:", promise, "reason:", reason);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -494,15 +503,23 @@ async function startServer() {
     res.json(contact);
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  // Log environment info for debugging
+  console.log(`Current Working Directory: ${process.cwd()}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+
+  // Robust production check: if NODE_ENV is 'production' OR if dist/index.html exists
+  const distPath = path.join(process.cwd(), "dist");
+  const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(distPath, "index.html"));
+
+  if (!isProduction) {
+    console.log("Starting in DEVELOPMENT mode with Vite middleware...");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    console.log("Starting in PRODUCTION mode, serving static files from dist...");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
