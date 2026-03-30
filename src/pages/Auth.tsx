@@ -123,9 +123,9 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] flex flex-col lg:flex-row overflow-hidden transition-colors duration-300">
       {/* Left Pane - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-24 bg-white relative z-10">
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-24 bg-[var(--background)] relative z-10">
         <div className="max-w-md w-full">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -133,17 +133,17 @@ const Auth = () => {
             transition={{ duration: 0.8 }}
           >
             <Link to="/" className="inline-flex items-center gap-2 mb-12 group">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-none group-hover:scale-110 transition-transform">
                 <Laptop className="w-5 h-5" />
               </div>
-              <span className="text-xl font-bold tracking-tighter text-gray-900">CompCharity</span>
+              <span className="text-xl font-bold tracking-tighter text-gray-900 dark:text-white">CompCharity</span>
             </Link>
 
             <div className="mb-12">
-              <h1 className="text-5xl font-bold tracking-tighter text-gray-900 mb-4">
+              <h1 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-white mb-4">
                 {isLogin ? "Welcome back." : "Join the mission."}
               </h1>
-              <p className="text-xl text-gray-500 font-medium">
+              <p className="text-xl text-gray-500 dark:text-gray-400 font-medium">
                 {isLogin 
                   ? "Sign in to manage your tech submissions." 
                   : "Start your journey of digital empowerment today."}
@@ -154,14 +154,14 @@ const Auth = () => {
               <div className="space-y-4">
                 {!isLogin && (
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Full Name</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                        <User className="h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors" />
                       </div>
                       <input
                         {...register("name")}
-                        className="block w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-3xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                        className="block w-full pl-14 pr-6 py-5 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-3xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 transition-all font-medium"
                         placeholder="John Doe"
                       />
                     </div>
@@ -170,14 +170,14 @@ const Auth = () => {
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                  <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                      <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors" />
                     </div>
                     <input
                       {...register("email")}
-                      className="block w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-3xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                      className="block w-full pl-14 pr-6 py-5 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-3xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 transition-all font-medium"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -186,19 +186,19 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center px-1">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Password</label>
+                    <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Password</label>
                     {isLogin && (
-                      <button type="button" className="text-xs font-bold text-blue-600 hover:text-blue-700">Forgot?</button>
+                      <button type="button" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Forgot?</button>
                     )}
                   </div>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                      <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors" />
                     </div>
                     <input
                       {...register("password")}
                       type="password"
-                      className="block w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-3xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                      className="block w-full pl-14 pr-6 py-5 bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent rounded-3xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 transition-all font-medium"
                       placeholder="••••••••"
                     />
                   </div>
@@ -209,7 +209,7 @@ const Auth = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center py-6 px-6 bg-blue-600 text-white rounded-3xl font-bold text-lg hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="w-full flex items-center justify-center py-6 px-6 bg-blue-600 text-white rounded-3xl font-bold text-lg hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {isLoading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />
@@ -224,16 +224,16 @@ const Auth = () => {
 
             <div className="relative my-12">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100"></div>
+                <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-6 bg-white text-gray-400 font-bold uppercase tracking-widest">Or continue with</span>
+                <span className="px-6 bg-[var(--background)] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest transition-colors duration-300">Or continue with</span>
               </div>
             </div>
 
             <button
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-4 py-5 px-6 bg-white border-2 border-gray-100 rounded-3xl font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-200 transition-all"
+              className="w-full flex items-center justify-center gap-4 py-5 px-6 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-3xl font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 transition-all"
             >
               <svg className="w-6 h-6" viewBox="0 0 24 24">
                 <path
@@ -259,7 +259,7 @@ const Auth = () => {
             <div className="mt-12 text-center">
               <button
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                className="text-lg font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
               >
                 {isLogin ? "Don't have an account? Register" : "Already have an account? Sign in"}
               </button>
@@ -269,7 +269,7 @@ const Auth = () => {
       </div>
 
       {/* Right Pane - Visuals */}
-      <div className="hidden lg:flex flex-1 bg-gray-900 relative items-center justify-center overflow-hidden">
+      <div className="hidden lg:flex flex-1 bg-gray-900 dark:bg-gray-950 relative items-center justify-center overflow-hidden">
         {/* Atmospheric Background */}
         <div className="absolute inset-0">
           <motion.div 

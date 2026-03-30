@@ -45,17 +45,17 @@ const About = () => {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-white">
+    <div ref={containerRef} className="min-h-screen bg-[var(--background)] transition-colors duration-300">
       {/* Hero Section - Editorial Style */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         {/* Background Parallax Elements */}
         <motion.div 
           style={{ y: y1 }}
-          className="absolute top-20 -left-20 w-96 h-96 bg-blue-400/10 rounded-full blur-[100px] -z-10" 
+          className="absolute top-20 -left-20 w-96 h-96 bg-blue-400/10 dark:bg-blue-900/20 rounded-full blur-[100px] -z-10" 
         />
         <motion.div 
           style={{ y: y2 }}
-          className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-teal-400/10 rounded-full blur-[120px] -z-10" 
+          className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-teal-400/10 dark:bg-purple-900/20 rounded-full blur-[120px] -z-10" 
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,11 +68,11 @@ const About = () => {
               >
                 <div className="flex items-center gap-4 mb-8">
                   <Logo showText={false} size="sm" />
-                  <div className="text-xs font-bold text-blue-600 uppercase tracking-[0.3em]">About CompCharity</div>
+                  <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em]">About CompCharity</div>
                 </div>
-                <h1 className="text-[12vw] lg:text-[110px] font-bold tracking-tighter leading-[0.85] text-gray-900 mb-12">
+                <h1 className="text-[12vw] lg:text-[110px] font-bold tracking-tighter leading-[0.85] text-gray-900 dark:text-white mb-12">
                   Technology with <br />
-                  <span className="text-blue-600 italic font-serif">Purpose.</span>
+                  <span className="text-blue-600 dark:text-blue-400 italic font-serif">Purpose.</span>
                 </h1>
               </motion.div>
             </div>
@@ -81,7 +81,7 @@ const About = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="text-xl text-gray-500 font-medium leading-relaxed"
+                className="text-xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed"
               >
                 CompCharity is a social impact platform dedicated to bridging the digital divide in Ireland by transforming unused technology into opportunity.
               </motion.p>
@@ -91,15 +91,15 @@ const About = () => {
       </section>
 
       {/* Intro Section */}
-      <section className="py-24 border-t border-gray-100">
+      <section className="py-24 border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <h2 className="text-4xl font-bold tracking-tighter text-gray-900 mb-8">Connecting Realities</h2>
-            <p className="text-2xl text-gray-500 font-medium leading-relaxed mb-8">
+            <h2 className="text-4xl font-bold tracking-tighter text-gray-900 dark:text-white mb-8">Connecting Realities</h2>
+            <p className="text-2xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed mb-8">
               In a world where access to technology defines access to education, employment, and growth, thousands are still left behind. At the same time, businesses hold large volumes of unused, recoverable devices.
             </p>
-            <div className="flex items-center gap-4 text-blue-600 font-bold text-xl">
-              <div className="w-12 h-1px bg-blue-600" />
+            <div className="flex items-center gap-4 text-blue-600 dark:text-blue-400 font-bold text-xl">
+              <div className="w-12 h-1px bg-blue-600 dark:bg-blue-400" />
               <span>We connect these two realities.</span>
             </div>
           </div>
@@ -107,11 +107,11 @@ const About = () => {
       </section>
 
       {/* How It Works - Grid */}
-      <section className="py-32 bg-gray-50">
+      <section className="py-32 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-24">
-            <h2 className="text-5xl font-bold tracking-tighter text-gray-900 mb-6">How It Works</h2>
-            <p className="text-xl text-gray-500 font-medium">A streamlined process designed for maximum social and environmental impact.</p>
+            <h2 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-white mb-6">How It Works</h2>
+            <p className="text-xl text-gray-500 dark:text-gray-400 font-medium">A streamlined process designed for maximum social and environmental impact.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -151,16 +151,16 @@ const About = () => {
                 whileInView="show"
                 viewport={{ once: true }}
                 variants={itemFade}
-                className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all group"
+                className="bg-white dark:bg-gray-900 p-10 rounded-[40px] shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none transition-all group"
               >
                 <div className="flex justify-between items-start mb-8">
-                  <div className={`w-14 h-14 rounded-2xl bg-${item.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <item.icon className={`w-7 h-7 text-${item.color}-600`} />
+                  <div className={`w-14 h-14 rounded-2xl bg-${item.color}-50 dark:bg-${item.color}-900/30 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <item.icon className={`w-7 h-7 text-${item.color}-600 dark:text-${item.color}-400`} />
                   </div>
-                  <span className="text-4xl font-bold text-gray-100 group-hover:text-blue-50 transition-colors">{item.step}</span>
+                  <span className="text-4xl font-bold text-gray-100 dark:text-gray-800 group-hover:text-blue-50 dark:group-hover:text-blue-900/20 transition-colors">{item.step}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{item.title}</h3>
-                <p className="text-gray-500 font-medium leading-relaxed">{item.desc}</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{item.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -183,22 +183,22 @@ const About = () => {
               <motion.div 
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-10 -right-10 bg-white p-8 rounded-[32px] shadow-2xl border border-gray-50 hidden md:block"
+                className="absolute -top-10 -right-10 bg-white dark:bg-gray-900 p-8 rounded-[32px] shadow-2xl border border-gray-50 dark:border-gray-800 hidden md:block"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
-                    <Leaf className="w-6 h-6 text-green-600" />
+                  <div className="w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
+                    <Leaf className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <div className="text-gray-900 font-bold">Circular Economy</div>
-                    <div className="text-gray-400 text-xs font-bold uppercase tracking-widest">Sustainability First</div>
+                    <div className="text-gray-900 dark:text-white font-bold">Circular Economy</div>
+                    <div className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-widest">Sustainability First</div>
                   </div>
                 </div>
               </motion.div>
             </div>
 
             <div className="space-y-12">
-              <h2 className="text-5xl font-bold tracking-tighter text-gray-900">Why It Matters</h2>
+              <h2 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-white">Why It Matters</h2>
               <div className="space-y-10">
                 {[
                   {
@@ -228,12 +228,12 @@ const About = () => {
                     transition={{ delay: i * 0.1 }}
                     className="flex gap-8 group"
                   >
-                    <div className={`w-16 h-16 rounded-2xl bg-${impact.color}-50 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      <impact.icon className={`w-8 h-8 text-${impact.color}-600`} />
+                    <div className={`w-16 h-16 rounded-2xl bg-${impact.color}-50 dark:bg-${impact.color}-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                      <impact.icon className={`w-8 h-8 text-${impact.color}-600 dark:text-${impact.color}-400`} />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{impact.title}</h3>
-                      <p className="text-lg text-gray-500 font-medium leading-relaxed">{impact.desc}</p>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{impact.title}</h3>
+                      <p className="text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{impact.desc}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -244,7 +244,7 @@ const About = () => {
       </section>
 
       {/* Our Vision - Immersive Section */}
-      <section className="py-32 bg-gray-900 text-white relative overflow-hidden">
+      <section className="py-32 bg-gray-900 dark:bg-black text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-blue-600/5 blur-[120px] -z-0" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-24">
@@ -272,15 +272,15 @@ const About = () => {
       {/* Join the Movement - CTA */}
       <section className="py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gray-50 rounded-[64px] p-16 md:p-24 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-[64px] p-16 md:p-24 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-12 opacity-5">
               <Logo showText={false} size="lg" />
             </div>
             <div className="max-w-xl relative z-10">
-              <h2 className="text-5xl font-bold tracking-tighter text-gray-900 mb-6">Join the Movement</h2>
-              <p className="text-2xl text-gray-500 font-medium mb-8">Every device matters. Every donation creates opportunity.</p>
+              <h2 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-white mb-6">Join the Movement</h2>
+              <p className="text-2xl text-gray-500 dark:text-gray-400 font-medium mb-8">Every device matters. Every donation creates opportunity.</p>
               <div className="flex flex-wrap gap-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-blue-600 uppercase tracking-widest">
+                <div className="flex items-center gap-2 text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
                   <Sparkles className="w-4 h-4" /> Help build the future
                 </div>
               </div>
@@ -288,14 +288,14 @@ const About = () => {
             <div className="flex flex-col sm:flex-row gap-6 relative z-10">
               <Link
                 to="/donate"
-                className="bg-gray-900 text-white px-12 py-6 rounded-3xl font-bold text-lg hover:bg-blue-600 transition-all shadow-2xl shadow-gray-200 hover:shadow-blue-200 flex items-center gap-3 group"
+                className="bg-gray-900 dark:bg-blue-600 text-white px-12 py-6 rounded-3xl font-bold text-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-2xl shadow-gray-200 dark:shadow-none flex items-center gap-3 group"
               >
                 Donate Tech
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/contact"
-                className="bg-white text-gray-900 border-2 border-gray-100 px-12 py-6 rounded-3xl font-bold text-lg hover:border-blue-600 hover:text-blue-600 transition-all"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-700 px-12 py-6 rounded-3xl font-bold text-lg hover:border-blue-600 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
               >
                 Partner With Us
               </Link>

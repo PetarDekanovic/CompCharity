@@ -18,11 +18,11 @@ export default function Home() {
   ];
 
   return (
-    <div className="overflow-hidden bg-white">
+    <div className="overflow-hidden bg-[var(--background)] transition-colors duration-300">
       {/* Hero Section - Split Layout (Recipe 11 inspired) */}
       <section className="relative min-h-[90vh] flex flex-col lg:flex-row">
         {/* Left Pane - Content */}
-        <div className="flex-1 flex items-center px-4 sm:px-8 lg:px-16 py-20 lg:py-0 bg-white relative z-10">
+        <div className="flex-1 flex items-center px-4 sm:px-8 lg:px-16 py-20 lg:py-0 bg-[var(--background)] relative z-10">
           <div className="max-w-2xl">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -33,11 +33,11 @@ export default function Home() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
-                className="inline-block px-4 py-1.5 mb-8 text-xs font-bold tracking-[0.2em] text-blue-600 uppercase bg-blue-50 rounded-full border border-blue-100"
+                className="inline-block px-4 py-1.5 mb-8 text-xs font-bold tracking-[0.2em] text-blue-600 dark:text-blue-400 uppercase bg-blue-50 dark:bg-blue-900/30 rounded-full border border-blue-100 dark:border-blue-800"
               >
                 Tech for Good in Ireland
               </motion.span>
-              <h1 className="text-6xl sm:text-7xl lg:text-[112px] font-bold tracking-tight text-gray-900 mb-8 leading-[0.88]">
+              <h1 className="text-6xl sm:text-7xl lg:text-[112px] font-bold tracking-tight text-gray-900 dark:text-white mb-8 leading-[0.88]">
                 <motion.span
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -50,7 +50,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="text-blue-600 block"
+                  className="text-blue-600 dark:text-blue-400 block"
                 >
                   Communities
                 </motion.span>
@@ -67,7 +67,7 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9, duration: 0.8 }}
-                className="text-xl text-gray-500 mb-12 leading-relaxed max-w-lg font-medium"
+                className="text-xl text-gray-500 dark:text-gray-400 mb-12 leading-relaxed max-w-lg font-medium"
               >
                 We turn unused technology into meaningful opportunities. Bridging the digital divide by refurbishing and donating tech to those in need. Every student has access to technology.
               </motion.p>
@@ -79,7 +79,7 @@ export default function Home() {
               >
                 <Link
                   to="/donate"
-                  className="group relative flex items-center justify-center gap-3 bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 overflow-hidden"
+                  className="group relative flex items-center justify-center gap-3 bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-2xl shadow-blue-200 dark:shadow-none overflow-hidden"
                 >
                   <span className="relative z-10">Donate Your Tech</span>
                   <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
@@ -91,7 +91,7 @@ export default function Home() {
                 </Link>
                 <Link
                   to="/resell"
-                  className="group flex items-center justify-center gap-2 bg-white text-gray-900 border-2 border-gray-100 px-10 py-5 rounded-2xl font-bold text-lg hover:border-blue-600 hover:text-blue-600 transition-all"
+                  className="group flex items-center justify-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-800 px-10 py-5 rounded-2xl font-bold text-lg hover:border-blue-600 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                 >
                   <span>Resell Your Tech</span>
                   <ArrowRight className="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
@@ -102,7 +102,7 @@ export default function Home() {
         </div>
 
         {/* Right Pane - Visuals (Atmospheric/Modern) */}
-        <div className="flex-1 bg-gray-50 relative overflow-hidden min-h-[500px] lg:min-h-0">
+        <div className="flex-1 bg-gray-50 dark:bg-gray-950 relative overflow-hidden min-h-[500px] lg:min-h-0">
           {/* Atmospheric Background (Recipe 7 inspired) */}
           <div className="absolute inset-0 overflow-hidden">
             <motion.div 
@@ -111,7 +111,7 @@ export default function Home() {
                 rotate: [0, 90, 0],
               }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-blue-100/50 rounded-full blur-[120px]" 
+              className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-blue-100/50 dark:bg-blue-900/20 rounded-full blur-[120px]" 
             />
             <motion.div 
               animate={{ 
@@ -119,7 +119,7 @@ export default function Home() {
                 rotate: [0, -90, 0],
               }}
               transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-blue-50 rounded-full blur-[100px]" 
+              className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-blue-50 dark:bg-purple-900/20 rounded-full blur-[100px]" 
             />
           </div>
 
@@ -129,10 +129,10 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
               animate={{ opacity: 1, scale: 1, rotate: -6 }}
               transition={{ duration: 1, delay: 0.3 }}
-              className="relative z-20 bg-white p-12 rounded-[48px] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] border border-gray-100"
+              className="relative z-20 bg-white dark:bg-gray-900 p-12 rounded-[48px] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] dark:shadow-none border border-gray-100 dark:border-gray-800"
             >
               <div className="relative">
-                <Laptop className="w-48 h-48 text-blue-600" />
+                <Laptop className="w-48 h-48 text-blue-600 dark:text-blue-400" />
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: [0, 1.2, 1], opacity: 1 }}
@@ -150,22 +150,22 @@ export default function Home() {
               <motion.div 
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-12 -right-12 bg-white p-6 rounded-3xl shadow-xl border border-gray-50"
+                className="absolute -top-12 -right-12 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-50 dark:border-gray-700"
               >
-                <Smartphone className="w-12 h-12 text-blue-500" />
+                <Smartphone className="w-12 h-12 text-blue-500 dark:text-blue-400" />
               </motion.div>
               <motion.div 
                 animate={{ y: [0, 20, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-12 -left-12 bg-white p-8 rounded-3xl shadow-xl border border-gray-50"
+                className="absolute -bottom-12 -left-12 bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-50 dark:border-gray-700"
               >
-                <Tablet className="w-16 h-16 text-blue-400" />
+                <Tablet className="w-16 h-16 text-blue-400 dark:text-blue-300" />
               </motion.div>
             </motion.div>
 
             {/* Decorative Rail Text (Recipe 11) */}
             <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden xl:block">
-              <span className="writing-vertical-rl rotate-180 text-[11px] font-bold tracking-[0.5em] text-gray-300 uppercase">
+              <span className="writing-vertical-rl rotate-180 text-[11px] font-bold tracking-[0.5em] text-gray-300 dark:text-gray-700 uppercase">
                 Sustainable Technology Solutions • Ireland • 2026
               </span>
             </div>
@@ -194,7 +194,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section - Clean Utility (Recipe 8 inspired) */}
-      <section className="py-32 bg-white">
+      <section className="py-32 bg-[var(--background)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial="hidden"
@@ -220,7 +220,7 @@ export default function Home() {
                 }}
                 className="group"
               >
-                <div className="text-[64px] font-light text-gray-900 mb-2 leading-none tracking-tighter">
+                <div className="text-[64px] font-light text-gray-900 dark:text-white mb-2 leading-none tracking-tighter">
                   {stat.value}
                 </div>
                 <div className="flex items-center gap-3">
@@ -228,9 +228,9 @@ export default function Home() {
                     initial={{ width: 0 }}
                     whileInView={{ width: 40 }}
                     transition={{ delay: 0.5 + i * 0.1, duration: 0.8 }}
-                    className="h-px bg-blue-600 group-hover:w-16 transition-all duration-500" 
+                    className="h-px bg-blue-600 dark:bg-blue-400 group-hover:w-16 transition-all duration-500" 
                   />
-                  <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">{stat.label}</div>
+                  <div className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{stat.label}</div>
                 </div>
               </motion.div>
             ))}
@@ -239,7 +239,7 @@ export default function Home() {
       </section>
 
       {/* How It Works - Visual Grid (Recipe 1 inspired) */}
-      <section className="py-32 bg-gray-50">
+      <section className="py-32 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -248,12 +248,12 @@ export default function Home() {
             className="flex flex-col lg:flex-row justify-between items-end mb-24 gap-8"
           >
             <div className="max-w-2xl">
-              <h2 className="text-5xl font-bold tracking-tight text-gray-900 mb-8">The Lifecycle of Impact</h2>
-              <p className="text-xl text-gray-500 leading-relaxed">Our process is transparent, secure, and designed to maximize social and environmental value at every stage.</p>
+              <h2 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">The Lifecycle of Impact</h2>
+              <p className="text-xl text-gray-500 dark:text-gray-400 leading-relaxed">Our process is transparent, secure, and designed to maximize social and environmental value at every stage.</p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 font-bold text-sm">01</div>
-              <div className="w-12 h-12 rounded-full border border-blue-600 flex items-center justify-center text-blue-600 font-bold text-sm">04</div>
+              <div className="w-12 h-12 rounded-full border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-600 font-bold text-sm">01</div>
+              <div className="w-12 h-12 rounded-full border border-blue-600 dark:border-blue-400 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">04</div>
             </div>
           </motion.div>
 
@@ -270,7 +270,7 @@ export default function Home() {
                 }
               }
             }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 border border-gray-200 rounded-[40px] overflow-hidden"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-[40px] overflow-hidden"
           >
             {steps.map((step, i) => (
               <motion.div 
@@ -280,17 +280,17 @@ export default function Home() {
                   show: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
                 }}
                 whileHover={{ backgroundColor: "#2563eb", transition: { duration: 0.3 } }}
-                className="bg-white p-12 group transition-colors duration-500 cursor-default"
+                className="bg-white dark:bg-gray-900 p-12 group transition-colors duration-500 cursor-default"
               >
-                <div className="text-xs font-bold text-blue-600 group-hover:text-blue-200 mb-12 tracking-widest uppercase">Step 0{i + 1}</div>
+                <div className="text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-200 mb-12 tracking-widest uppercase">Step 0{i + 1}</div>
                 <motion.div 
                   whileHover={{ rotate: [0, -10, 10, 0], transition: { duration: 0.5 } }}
                   className="mb-12"
                 >
-                  <step.icon className="w-12 h-12 text-gray-900 group-hover:text-white transition-colors" />
+                  <step.icon className="w-12 h-12 text-gray-900 dark:text-white group-hover:text-white transition-colors" />
                 </motion.div>
-                <h3 className="text-2xl font-bold text-gray-900 group-hover:text-white mb-4 transition-colors">{step.title}</h3>
-                <p className="text-gray-500 group-hover:text-blue-100 transition-colors leading-relaxed">{step.description}</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-white mb-4 transition-colors">{step.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 group-hover:text-blue-100 transition-colors leading-relaxed">{step.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -298,12 +298,12 @@ export default function Home() {
       </section>
 
       {/* Two Paths Section - Bold & High Contrast */}
-      <section className="py-32 bg-white">
+      <section className="py-32 bg-[var(--background)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-blue-600 rounded-[64px] p-16 text-white relative overflow-hidden group cursor-pointer"
+              className="bg-blue-600 rounded-[64px] p-16 text-white relative overflow-hidden group cursor-pointer shadow-2xl shadow-blue-200 dark:shadow-none"
             >
               <div className="relative z-10">
                 <span className="text-xs font-bold tracking-[0.3em] uppercase opacity-70 mb-8 block">Option One</span>
@@ -323,7 +323,7 @@ export default function Home() {
 
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-gray-900 rounded-[64px] p-16 text-white relative overflow-hidden group cursor-pointer"
+              className="bg-gray-900 dark:bg-gray-950 rounded-[64px] p-16 text-white relative overflow-hidden group cursor-pointer border border-transparent dark:border-gray-800"
             >
               <div className="relative z-10">
                 <span className="text-xs font-bold tracking-[0.3em] uppercase opacity-50 mb-8 block">Option Two</span>
@@ -338,24 +338,24 @@ export default function Home() {
                   Submit for Resale <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
-              <Recycle className="absolute -bottom-20 -right-20 w-96 h-96 text-gray-800 group-hover:scale-110 transition-transform duration-700" />
+              <Recycle className="absolute -bottom-20 -right-20 w-96 h-96 text-gray-800 dark:text-gray-900 group-hover:scale-110 transition-transform duration-700" />
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Business CTA - Split Layout Style */}
-      <section className="py-32 bg-gray-50">
+      <section className="py-32 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-[64px] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col lg:flex-row">
+          <div className="bg-white dark:bg-gray-900 rounded-[64px] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.05)] dark:shadow-none border border-gray-100 dark:border-gray-800 flex flex-col lg:flex-row">
             <div className="lg:w-3/5 p-16 lg:p-24">
-              <h2 className="text-5xl font-bold text-gray-900 mb-8 leading-tight">Corporate Bulk <br />Donations</h2>
-              <p className="text-xl text-gray-500 mb-12 max-w-xl leading-relaxed">
+              <h2 className="text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight">Corporate Bulk <br />Donations</h2>
+              <p className="text-xl text-gray-500 dark:text-gray-400 mb-12 max-w-xl leading-relaxed">
                 Is your business upgrading its IT infrastructure? Partner with CompCharity for secure, ethical, and sustainable disposal of your old equipment. We provide full data destruction certificates and impact reporting.
               </p>
               <Link
                 to="/contact?type=corporate"
-                className="inline-flex items-center gap-3 bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-2xl shadow-blue-100"
+                className="inline-flex items-center gap-3 bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-2xl shadow-blue-100 dark:shadow-none"
               >
                 Partner With Us <ArrowRight className="w-5 h-5" />
               </Link>

@@ -21,6 +21,7 @@ import PageTransition from "./components/layout/PageTransition";
 import GeminiChatbot from "./components/layout/GeminiChatbot";
 import { useAuth } from "./hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
   const { user, loading } = useAuth();
@@ -66,16 +67,18 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans">
-        <Navbar />
-        <main className="flex-grow">
-          <AnimatedRoutes />
-        </main>
-        <GeminiChatbot />
-        <Footer />
-        <Toaster position="top-right" />
-      </div>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] font-sans transition-colors duration-300">
+          <Navbar />
+          <main className="flex-grow">
+            <AnimatedRoutes />
+          </main>
+          <GeminiChatbot />
+          <Footer />
+          <Toaster position="top-right" />
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }

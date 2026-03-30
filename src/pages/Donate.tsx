@@ -55,20 +55,20 @@ const Donate = () => {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-white">
+    <div ref={containerRef} className="min-h-screen bg-[var(--background)] transition-colors duration-300">
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
         {/* Advanced Graphic Design Background Elements */}
-        <div className="absolute inset-0 bg-gray-50/50 -z-10" />
+        <div className="absolute inset-0 bg-gray-50/50 dark:bg-gray-950/50 -z-10" />
         
         {/* Parallax Blobs */}
         <motion.div 
           style={{ y: y1 }}
-          className="absolute top-20 -left-20 w-96 h-96 bg-blue-400/10 rounded-full blur-[100px] -z-10" 
+          className="absolute top-20 -left-20 w-96 h-96 bg-blue-400/10 dark:bg-blue-900/20 rounded-full blur-[100px] -z-10" 
         />
         <motion.div 
           style={{ y: y2 }}
-          className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-teal-400/10 rounded-full blur-[120px] -z-10" 
+          className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-teal-400/10 dark:bg-purple-900/20 rounded-full blur-[120px] -z-10" 
         />
 
         {/* Floating Logo without text */}
@@ -82,14 +82,14 @@ const Donate = () => {
         {/* Floating Icons with Parallax */}
         <motion.div
           style={{ y: y2 }}
-          className="absolute top-1/4 left-[5%] p-4 bg-white rounded-2xl shadow-xl border border-gray-50 -z-10 hidden xl:block"
+          className="absolute top-1/4 left-[5%] p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-50 dark:border-gray-800 -z-10 hidden xl:block"
         >
           <Globe className="w-8 h-8 text-blue-500" />
         </motion.div>
         
         <motion.div
           style={{ y: y1 }}
-          className="absolute bottom-1/4 right-[5%] p-4 bg-white rounded-2xl shadow-xl border border-gray-50 -z-10 hidden xl:block"
+          className="absolute bottom-1/4 right-[5%] p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-50 dark:border-gray-800 -z-10 hidden xl:block"
         >
           <Zap className="w-8 h-8 text-teal-500" />
         </motion.div>
@@ -101,29 +101,29 @@ const Donate = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-widest mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest mb-8">
                 <Sparkles className="w-4 h-4" />
                 <span>Make an Impact Today</span>
               </div>
-              <h1 className="text-7xl font-bold tracking-tighter text-gray-900 leading-[0.9] mb-8">
+              <h1 className="text-7xl font-bold tracking-tighter text-gray-900 dark:text-white leading-[0.9] mb-8">
                 Your Old Tech, <br />
-                <span className="text-blue-600">Their New Future.</span>
+                <span className="text-blue-600 dark:text-blue-400">Their New Future.</span>
               </h1>
-              <p className="text-xl text-gray-500 font-medium leading-relaxed mb-12 max-w-lg">
+              <p className="text-xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed mb-12 max-w-lg">
                 Donating your unused laptops, tablets, and smartphones helps bridge the digital divide in Ireland while protecting the environment.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
                   href="#donation-form"
-                  className="bg-gray-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-2xl shadow-gray-200 hover:shadow-blue-200 flex items-center justify-center gap-2 group"
+                  className="bg-gray-900 dark:bg-blue-600 text-white px-10 py-5 rounded-2xl font-bold hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-2xl shadow-gray-200 dark:shadow-none flex items-center justify-center gap-2 group"
                 >
                   Start Donation
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </a>
                 <a
                   href="#how-it-works"
-                  className="px-10 py-5 rounded-2xl font-bold text-gray-900 border-2 border-gray-100 hover:border-blue-600 hover:text-blue-600 transition-all flex items-center justify-center"
+                  className="px-10 py-5 rounded-2xl font-bold text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-800 hover:border-blue-600 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center justify-center"
                 >
                   Learn Process
                 </a>
@@ -184,11 +184,11 @@ const Donate = () => {
       </section>
 
       {/* Benefits Grid */}
-      <section className="py-32 border-t border-gray-100">
+      <section className="py-32 border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-24">
-            <h2 className="text-5xl font-bold tracking-tighter text-gray-900 mb-6">Why Donate to Us?</h2>
-            <p className="text-xl text-gray-500 font-medium">We ensure your donation makes the maximum possible impact while keeping your data safe.</p>
+            <h2 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-white mb-6">Why Donate to Us?</h2>
+            <p className="text-xl text-gray-500 dark:text-gray-400 font-medium">We ensure your donation makes the maximum possible impact while keeping your data safe.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -215,13 +215,13 @@ const Donate = () => {
               <motion.div
                 key={i}
                 whileHover={{ y: -10 }}
-                className="p-10 rounded-[40px] bg-gray-50 border border-transparent hover:border-gray-200 transition-all group"
+                className="p-10 rounded-[40px] bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-gray-200 dark:hover:border-gray-800 transition-all group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                  <benefit.icon className={`w-8 h-8 text-${benefit.color}-600`} />
+                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                  <benefit.icon className={`w-8 h-8 text-${benefit.color}-600 dark:text-${benefit.color}-400`} />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{benefit.title}</h3>
-                <p className="text-gray-500 font-medium leading-relaxed">{benefit.desc}</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{benefit.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{benefit.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -229,15 +229,15 @@ const Donate = () => {
       </section>
 
       {/* Form Section */}
-      <section id="donation-form" className="py-32 bg-gray-50">
+      <section id="donation-form" className="py-32 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
             <div className="lg:col-span-4 space-y-8">
-              <h2 className="text-5xl font-bold tracking-tighter text-gray-900">Ready to Donate?</h2>
-              <p className="text-lg text-gray-500 font-medium leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tighter text-gray-900 dark:text-white">Ready to Donate?</h2>
+              <p className="text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
                 Fill out the form to start your donation process. Our team will review your submission and contact you within 24-48 hours.
               </p>
-              <div className="p-8 bg-blue-600 rounded-[32px] text-white shadow-2xl shadow-blue-200">
+              <div className="p-8 bg-blue-600 rounded-[32px] text-white shadow-2xl shadow-blue-200 dark:shadow-none">
                 <h3 className="text-2xl font-bold mb-4">Business Donation?</h3>
                 <p className="text-blue-100 font-medium mb-8 leading-relaxed">
                   For bulk donations from companies, please use our business partnership form for specialized handling and tax documentation.
@@ -249,7 +249,7 @@ const Donate = () => {
               </div>
             </div>
             <div className="lg:col-span-8">
-              <div className="bg-white p-10 md:p-16 rounded-[48px] shadow-2xl shadow-gray-200 border border-gray-100">
+              <div className="bg-white dark:bg-gray-900 p-10 md:p-16 rounded-[48px] shadow-2xl shadow-gray-200 dark:shadow-none border border-gray-100 dark:border-gray-800">
                 <SubmissionForm type="DONATION" />
               </div>
             </div>
