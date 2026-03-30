@@ -62,8 +62,11 @@ const Auth = () => {
   // Listen for success message from popup
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Validate origin
-      if (event.origin !== window.location.origin) return;
+      // Validate origin - be more robust with trailing slashes
+      const currentOrigin = window.location.origin.replace(/\/$/, "");
+      const eventOrigin = event.origin.replace(/\/$/, "");
+      
+      if (eventOrigin !== currentOrigin) return;
 
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
         const { token, user } = event.data;
