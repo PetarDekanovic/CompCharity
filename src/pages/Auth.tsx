@@ -38,12 +38,47 @@ const Auth = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithGoogle();
-      toast.success("Signed in with Google!");
+      // Fetch the OAuth URL from the backend
+      const response = await fetch('/api/auth/google/url');
+      if (!response.ok) throw new Error('Failed to get auth URL');
+      const { url } = await response.json();
+
+      // Open the OAuth provider's URL directly in a popup
+      const authWindow = window.open(
+        url,
+        'Google Login',
+        'width=600,height=700'
+      );
+
+      if (!authWindow) {
+        toast.error("Popup blocked. Please allow popups for this site.");
+      }
     } catch (error) {
+      console.error("Google login error:", error);
       toast.error("Failed to sign in with Google");
     }
   };
+
+  // Listen for success message from popup
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate origin
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        const { token, user } = event.data;
+        // Store token and user in localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        toast.success("Signed in with Google!");
+        // Force a reload to refresh the AuthProvider state
+        window.location.reload();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const {
     register,
@@ -56,14 +91,27 @@ const Auth = () => {
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, data.email, data.password);
-        toast.success("Welcome back!");
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-        await updateProfile(userCredential.user, { displayName: data.name });
-        toast.success("Account created successfully!");
+      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Authentication failed");
       }
+
+      // Store token and user in localStorage
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('user', JSON.stringify(result.user));
+
+      toast.success(isLogin ? "Welcome back!" : "Account created successfully!");
+      
+      // Force a reload to refresh the AuthProvider state
+      window.location.reload();
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
     } finally {

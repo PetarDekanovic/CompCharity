@@ -23,6 +23,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Check for backend token first
+    const backendToken = localStorage.getItem('token');
+    const backendUserStr = localStorage.getItem('user');
+    
+    if (backendToken && backendUserStr) {
+      try {
+        const backendUser = JSON.parse(backendUserStr);
+        setUser(backendUser);
+        setLoading(false);
+      } catch (e) {
+        console.error("Failed to parse backend user", e);
+      }
+    }
+
+    // 2. Check Firebase Auth
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // Check if user exists in Firestore, if not create them
@@ -51,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: role,
           photoURL: firebaseUser.photoURL || undefined,
         });
-      } else {
+      } else if (!backendToken) {
         setUser(null);
       }
       setLoading(false);
@@ -62,6 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await auth.signOut();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 

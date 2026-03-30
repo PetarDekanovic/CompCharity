@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Upload, X, CheckCircle, Loader2, ChevronRight, ChevronLeft, Laptop, Smartphone, Monitor, Printer, MousePointer2, Info, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { db, collection, addDoc, serverTimestamp, handleFirestoreError, OperationType } from "../../lib/firebase";
 import { useAuth } from "../../hooks/useAuth";
 import { analyzeDeviceDescription } from "../../services/geminiService";
 import VoiceRecorder from "../ui/VoiceRecorder";
@@ -145,30 +144,38 @@ export default function SubmissionForm({ type }: Props) {
     }
 
     setIsSubmitting(true);
-    const referenceNumber = `CC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      // For now, we'll just store placeholder image URLs
-      // In a real app, you'd upload to Firebase Storage first
-      const imageUrls = previews.map((_, i) => `https://picsum.photos/seed/device-${i}/800/600`);
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+      formData.append("type", type);
+      
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
 
-      const submissionData = {
-        ...data,
-        userId: user.id,
-        type,
-        status: "pending",
-        referenceNumber,
-        images: imageUrls,
-        createdAt: serverTimestamp(),
-      };
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/submissions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-      await addDoc(collection(db, "submissions"), submissionData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit");
+      }
       
       setIsSuccess(true);
       toast.success("Submission received! We'll be in touch soon.");
       setTimeout(() => navigate("/dashboard"), 3000);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, "submissions");
+    } catch (error: any) {
+      console.error("Submission Error:", error);
+      toast.error(error.message || "Failed to submit request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Laptop, Clock, CheckCircle, XCircle, ChevronRight, Package, Calendar, MapPin, Tag, Info, ArrowRight, Activity, ShieldCheck, Search, Filter, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
-import { db, collection, query, where, onSnapshot, handleFirestoreError, OperationType } from "../lib/firebase";
+import { toast } from "sonner";
 
 interface Submission {
   id: string;
@@ -30,35 +30,31 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
 
-    const q = query(
-      collection(db, "submissions"),
-      where("userId", "==", user.id)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Submission[];
-      
-      // Sort by createdAt descending
-      const sortedDocs = docs.sort((a, b) => {
-        const timeA = a.createdAt?.seconds || 0;
-        const timeB = b.createdAt?.seconds || 0;
-        return timeB - timeA;
-      });
-
-      setSubmissions(sortedDocs);
-      if (sortedDocs.length > 0 && !selectedSubmission) {
-        setSelectedSubmission(sortedDocs[0]);
+    const fetchSubmissions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/submissions/my", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        
+        if (!response.ok) throw new Error("Failed to fetch submissions");
+        
+        const data = await response.json();
+        setSubmissions(data);
+        if (data.length > 0 && !selectedSubmission) {
+          setSelectedSubmission(data[0]);
+        }
+      } catch (error) {
+        console.error("Dashboard Fetch Error:", error);
+        toast.error("Failed to load your submissions.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, "submissions");
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    fetchSubmissions();
   }, [user]);
 
   const getStatusColor = (status: string) => {
@@ -83,16 +79,14 @@ const Dashboard = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return "N/A";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return format(date, "MMM d, yyyy");
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return format(new Date(dateString), "MMM d, yyyy");
   };
 
-  const formatDateTime = (timestamp: any) => {
-    if (!timestamp) return "N/A";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return format(date, "MMM d, HH:mm");
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return format(new Date(dateString), "MMM d, HH:mm");
   };
 
   if (loading) return (
@@ -251,7 +245,7 @@ const Dashboard = () => {
                       <div className="flex items-center gap-6">
                         <div className="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
                           {sub.images && sub.images[0] ? (
-                            <img src={sub.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <img src={typeof sub.images[0] === 'string' ? sub.images[0] : (sub.images[0] as any).url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Laptop className="w-8 h-8 text-gray-200" />
@@ -330,13 +324,13 @@ const Dashboard = () => {
                       <div className="space-y-4">
                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Visual Documentation</div>
                         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                          {selectedSubmission.images?.map((img, i) => (
+                          {selectedSubmission.images?.map((img: any, i) => (
                             <motion.div 
                               key={i} 
                               whileHover={{ scale: 1.05 }}
                               className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg border border-gray-100"
                             >
-                              <img src={img} className="w-full h-full object-cover" />
+                              <img src={typeof img === 'string' ? img : img.url} className="w-full h-full object-cover" />
                             </motion.div>
                           ))}
                           {(!selectedSubmission.images || selectedSubmission.images.length === 0) && (
