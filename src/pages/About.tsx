@@ -254,7 +254,7 @@ const About = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { text: "Every student has access to technology", icon: Laptop },
+              { text: "Every student has access to technology.", icon: Laptop },
               { text: "No usable device is wasted", icon: Recycle },
               { text: "Businesses actively support digital inclusion", icon: Globe }
             ].map((vision, i) => (
