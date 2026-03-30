@@ -104,7 +104,7 @@ async function startServer() {
 
   // Google OAuth
   app.get("/api/auth/google/url", (req, res) => {
-    const redirectUri = `${process.env.APP_URL}/api/auth/google/callback`;
+    const redirectUri = `${process.env.APP_URL}/api/auth/callback/google`;
     const url = googleClient.generateAuthUrl({
       access_type: "offline",
       scope: ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
@@ -113,9 +113,9 @@ async function startServer() {
     res.json({ url });
   });
 
-  app.get("/api/auth/google/callback", async (req, res) => {
+  app.get("/api/auth/callback/google", async (req, res) => {
     const { code } = req.query;
-    const redirectUri = `${process.env.APP_URL}/api/auth/google/callback`;
+    const redirectUri = `${process.env.APP_URL}/api/auth/callback/google`;
 
     try {
       const { tokens } = await googleClient.getToken({
