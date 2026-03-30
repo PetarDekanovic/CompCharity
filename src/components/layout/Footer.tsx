@@ -1,5 +1,16 @@
 import { Link } from "react-router-dom";
-import { Laptop, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, Music2 } from "lucide-react";
+import { Laptop, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+
+const TikTok = ({ className }: { className?: string }) => (
+  <svg 
+    className={className} 
+    fill="currentColor" 
+    viewBox="0 0 24 24" 
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47-1.26-.88-2.22-2.19-2.68-3.6V15.5c.2 5.99-7.41 9.12-11.47 5.28-4.06-3.84-.3-10.66 5.39-9.12v4.03c-2.69-.78-5.17 2.02-3.58 4.17 1.58 2.16 5.28.9 5.28-1.81V.02z" />
+  </svg>
+);
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,7 +32,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               {[
-                { icon: Music2, href: "https://www.tiktok.com/@compcharity" },
+                { icon: TikTok, href: "https://www.tiktok.com/@compcharity" },
                 { icon: Facebook, href: "#" },
                 { icon: Twitter, href: "#" },
                 { icon: Instagram, href: "#" }
