@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
-import { Laptop, Smartphone, Tablet, Monitor, ArrowRight, CheckCircle, Users, Globe, Recycle, ShieldCheck } from "lucide-react";
+import { Laptop, Smartphone, Tablet, Monitor, ArrowRight, CheckCircle, Users, Globe, Recycle, ShieldCheck, Heart } from "lucide-react";
 
 export default function Home() {
   const stats = [
@@ -131,7 +131,22 @@ export default function Home() {
               transition={{ duration: 1, delay: 0.3 }}
               className="relative z-20 bg-white p-12 rounded-[48px] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] border border-gray-100"
             >
-              <Laptop className="w-48 h-48 text-blue-600" />
+              <div className="relative">
+                <Laptop className="w-48 h-48 text-blue-600" />
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                  className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2"
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.15, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Heart className="w-12 h-12 text-red-500 fill-red-500" />
+                  </motion.div>
+                </motion.div>
+              </div>
               <motion.div 
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}

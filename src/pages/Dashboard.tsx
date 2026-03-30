@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Laptop, Clock, CheckCircle, XCircle, ChevronRight, Package, Calendar, MapPin, Tag, Info, ArrowRight, Activity, ShieldCheck, Search, Filter } from "lucide-react";
+import { Laptop, Clock, CheckCircle, XCircle, ChevronRight, Package, Calendar, MapPin, Tag, Info, ArrowRight, Activity, ShieldCheck, Search, Filter, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { db, collection, query, where, onSnapshot, handleFirestoreError, OperationType } from "../lib/firebase";
 
@@ -371,6 +371,21 @@ const Dashboard = () => {
                             ))
                           )}
                         </div>
+                      </div>
+
+                      {/* WhatsApp Support Action */}
+                      <div className="px-10 pb-10">
+                        <motion.a
+                          href={`https://wa.me/353871234567?text=${encodeURIComponent(`Hi CompCharity, I have a question about my submission ${selectedSubmission.referenceNumber} (${selectedSubmission.brand} ${selectedSubmission.model}).`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full flex items-center justify-center gap-3 bg-emerald-500 text-white py-6 rounded-3xl font-bold text-lg hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100"
+                        >
+                          <MessageCircle className="w-6 h-6" />
+                          <span>Chat with Support on WhatsApp</span>
+                        </motion.a>
                       </div>
                     </div>
                   </motion.div>

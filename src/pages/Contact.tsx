@@ -89,26 +89,47 @@ const Contact = () => {
                 Have a question about tech donation, resale, or partnership? We're here to help you make an impact.
               </p>
 
-              <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-12">
-                <div className="space-y-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-200">
-                    <Mail className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Email Us</h3>
-                    <p className="text-gray-500 font-medium">office@compcharity.org</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center shadow-xl shadow-gray-200">
-                    <Phone className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Call Us</h3>
-                    <p className="text-gray-500 font-medium">Mon-Fri, 9am – 6pm</p>
-                  </div>
-                </div>
+              <div className="mt-12 flex flex-col sm:flex-row gap-6">
+                <motion.a
+                  href="https://wa.me/353871234567"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex items-center justify-center gap-3 bg-emerald-500 text-white px-10 py-5 rounded-2xl font-bold text-lg hover:bg-emerald-600 transition-all shadow-2xl shadow-emerald-100"
+                >
+                  <MessageSquare className="w-6 h-6" />
+                  <span>WhatsApp Us Directly</span>
+                </motion.a>
               </div>
+
+                <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-12">
+                  <div className="space-y-4">
+                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-200">
+                      <Mail className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">Email Us</h3>
+                      <p className="text-gray-500 font-medium">office@compcharity.org</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-xl shadow-green-200">
+                      <MessageSquare className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">WhatsApp Us</h3>
+                      <a 
+                        href="https://wa.me/353871234567" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-500 font-medium hover:text-green-600 transition-colors"
+                      >
+                        +353 87 123 4567
+                      </a>
+                    </div>
+                  </div>
+                </div>
             </motion.div>
 
             <div className="relative">

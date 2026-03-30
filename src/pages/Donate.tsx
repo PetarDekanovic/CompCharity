@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import React, { useRef, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { 
   Laptop, 
   ShieldCheck, 
@@ -11,11 +11,17 @@ import {
   Truck,
   Sparkles,
   Globe,
-  Zap
+  Zap,
+  MapPin,
+  Search,
+  Loader2,
+  ExternalLink
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SubmissionForm from "../components/forms/SubmissionForm";
 import Logo from "../components/layout/Logo";
+import { findDropOffPoints } from "../services/geminiService";
+import { toast } from "sonner";
 
 const Donate = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +34,25 @@ const Donate = () => {
   const y2 = useTransform(scrollYProgress, [0, 1], [0, -150]);
   const rotate1 = useTransform(scrollYProgress, [0, 1], [0, 45]);
   const opacity1 = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
+  const [location, setLocation] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<{ text: string; groundingChunks: any[] } | null>(null);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!location) return;
+    setIsSearching(true);
+    try {
+      const result = await findDropOffPoints(location);
+      setSearchResult(result);
+    } catch (error) {
+      console.error("Search Error:", error);
+      toast.error("Failed to find drop-off points.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   return (
     <div ref={containerRef} className="min-h-screen bg-white">
@@ -226,6 +251,103 @@ const Donate = () => {
             <div className="lg:col-span-8">
               <div className="bg-white p-10 md:p-16 rounded-[48px] shadow-2xl shadow-gray-200 border border-gray-100">
                 <SubmissionForm type="DONATION" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Find Drop-off Points */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gray-900 rounded-[64px] p-12 md:p-24 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-full h-full bg-blue-600/10 blur-[100px] -z-0" />
+            
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-8">
+                  <MapPin className="w-4 h-4" />
+                  <span>Local Hubs</span>
+                </div>
+                <h2 className="text-5xl md:text-6xl font-bold tracking-tighter text-white mb-8 leading-[0.9]">
+                  Find a <br />
+                  <span className="text-blue-500 italic font-serif">Drop-off Point.</span>
+                </h2>
+                <p className="text-xl text-white/50 font-medium leading-relaxed mb-12 max-w-md">
+                  Enter your city or county in Ireland to find the nearest CompCharity hub or partner recycling center.
+                </p>
+
+                <form onSubmit={handleSearch} className="relative max-w-md">
+                  <input 
+                    type="text" 
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. Dublin 2, Cork City, Galway..."
+                    className="w-full px-8 py-6 bg-white/5 border border-white/10 rounded-3xl text-white font-medium focus:outline-none focus:bg-white/10 focus:border-blue-500 transition-all"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={isSearching}
+                    className="absolute right-2 top-2 bottom-2 bg-blue-600 text-white px-6 rounded-2xl hover:bg-blue-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                    <span className="hidden sm:inline">Search</span>
+                  </button>
+                </form>
+              </div>
+
+              <div className="min-h-[300px]">
+                <AnimatePresence mode="wait">
+                  {searchResult ? (
+                    <motion.div
+                      key="results"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="p-8 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-xl">
+                        <div className="text-white/80 text-lg leading-relaxed mb-8">
+                          {searchResult.text}
+                        </div>
+                        
+                        {searchResult.groundingChunks.length > 0 && (
+                          <div className="space-y-4">
+                            <div className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Verified Locations</div>
+                            <div className="grid grid-cols-1 gap-3">
+                              {searchResult.groundingChunks.map((chunk: any, i: number) => (
+                                chunk.web && (
+                                  <a 
+                                    key={i}
+                                    href={chunk.web.uri}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all group"
+                                  >
+                                    <span className="text-white font-bold text-sm truncate pr-4">{chunk.web.title}</span>
+                                    <ExternalLink className="w-4 h-4 text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                  </a>
+                                )
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="empty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="h-full flex flex-col items-center justify-center text-center p-12 border-2 border-dashed border-white/10 rounded-[40px]"
+                    >
+                      <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                        <MapPin className="w-10 h-10 text-white/20" />
+                      </div>
+                      <p className="text-white/30 font-medium">Search results will appear here</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { db, collection, addDoc, serverTimestamp, handleFirestoreError, OperationType } from "../../lib/firebase";
 import { useAuth } from "../../hooks/useAuth";
 import { analyzeDeviceDescription } from "../../services/geminiService";
+import VoiceRecorder from "../ui/VoiceRecorder";
 
 const submissionSchema = z.object({
   fullName: z.string().min(2, "Name is required"),
@@ -398,7 +399,7 @@ export default function SubmissionForm({ type }: Props) {
                     {errors.collectionPreference && <p className="text-xs text-red-500 font-bold">{errors.collectionPreference.message}</p>}
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Description & Issues</label>
                     <motion.button
@@ -417,12 +418,22 @@ export default function SubmissionForm({ type }: Props) {
                       Analyze with Gemini
                     </motion.button>
                   </div>
-                  <textarea
-                    {...register("description")}
-                    rows={4}
-                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                    placeholder="Describe any scratches, missing keys, or performance issues..."
-                  />
+                  
+                  <div className="space-y-4">
+                    <VoiceRecorder 
+                      onTranscription={(text) => {
+                        const current = watch("description");
+                        setValue("description", current ? `${current}\n\n${text}` : text);
+                      }} 
+                    />
+                    
+                    <textarea
+                      {...register("description")}
+                      rows={4}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                      placeholder="Describe any scratches, missing keys, or performance issues..."
+                    />
+                  </div>
                   {errors.description && <p className="text-xs text-red-500 font-bold">{errors.description.message}</p>}
                 </div>
 

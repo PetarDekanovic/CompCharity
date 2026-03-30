@@ -40,6 +40,20 @@ function AdminBlog() {
     readTime: "5 min read"
   });
 
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("new") === "true") {
+      setIsEditing(true);
+      setCurrentPost(null);
+      setFormData({
+        title: "", slug: "", content: "", excerpt: "", author: "CompCharity Team",
+        category: "Technology", image: "", youtubeUrl: "", readTime: "5 min read"
+      });
+    }
+  }, [location.search]);
+
   useEffect(() => {
     const q = query(collection(db, "blogPosts"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -337,6 +351,17 @@ function AdminSidebar() {
             </Link>
           );
         })}
+        
+        <div className="pt-6 mt-6 border-t border-gray-50">
+          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-4">Quick Actions</div>
+          <Link
+            to="/admin/blog?new=true"
+            className="flex items-center gap-3 px-4 py-4 rounded-3xl bg-blue-50 text-blue-600 text-sm font-bold hover:bg-blue-100 transition-all border border-blue-100"
+          >
+            <Plus className="w-4 h-4" />
+            Write Blog Post
+          </Link>
+        </div>
       </nav>
       <div className="pt-6 border-t border-gray-50">
         <Link to="/" className="text-xs font-bold text-gray-400 hover:text-blue-600 uppercase tracking-widest flex items-center gap-2">
@@ -589,9 +614,34 @@ function AdminOverview({ submissions, formatDate }: { submissions: any[], format
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-8">Recent Activity</h3>
-          <div className="space-y-6">
+        <div className="space-y-8">
+          <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-8">Quick Actions</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <Link 
+                to="/admin/blog?new=true"
+                className="p-6 rounded-3xl bg-blue-50 border border-blue-100 flex flex-col items-center gap-4 hover:bg-blue-100 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Plus className="w-6 h-6 text-blue-600" />
+                </div>
+                <span className="text-sm font-bold text-blue-600">Write Blog Post</span>
+              </Link>
+              <Link 
+                to="/admin/submissions"
+                className="p-6 rounded-3xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-4 hover:bg-gray-100 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Package className="w-6 h-6 text-gray-600" />
+                </div>
+                <span className="text-sm font-bold text-gray-600">Review Submissions</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-8">Recent Activity</h3>
+            <div className="space-y-6">
             {submissions.slice(0, 5).map((sub, i) => (
               <div key={i} className="flex gap-4 items-start">
                 <div className="w-2 h-2 rounded-full bg-blue-600 mt-2" />
@@ -606,7 +656,8 @@ function AdminOverview({ submissions, formatDate }: { submissions: any[], format
             )}
           </div>
         </div>
-        <div className="bg-gray-900 p-8 rounded-[40px] text-white">
+      </div>
+      <div className="bg-gray-900 p-8 rounded-[40px] text-white">
           <h3 className="text-lg font-bold mb-8">System Health</h3>
           <div className="space-y-6">
             <div className="flex justify-between items-center">

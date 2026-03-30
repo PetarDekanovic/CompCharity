@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Calendar, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin, Clock, Bookmark, MessageCircle, Sparkles, Loader2 } from "lucide-react";
+import { Calendar, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin, Clock, Bookmark, MessageCircle, Sparkles, Loader2, Volume2, VolumeX, Play, Pause } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import { db, collection, query, where, getDocs, doc, updateDoc, handleFirestoreError, OperationType } from "../lib/firebase";
-import { generateBlogKeyTakeaways } from "../services/geminiService";
+import { generateBlogKeyTakeaways, generateSpeech } from "../services/geminiService";
+import { toast } from "sonner";
 
 interface Post {
   id: string;
@@ -26,6 +27,53 @@ const BlogPost = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGeneratingTakeaways, setIsGeneratingTakeaways] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleListen = async () => {
+    if (!post) return;
+    
+    if (isSpeaking) {
+      audioRef.current?.pause();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (audioRef.current) {
+      audioRef.current.play();
+      setIsSpeaking(true);
+      return;
+    }
+
+    setIsGeneratingAudio(true);
+    try {
+      // Summarize for TTS to keep it concise
+      const textToSpeak = `Title: ${post.title}. This article is about ${post.category?.name || "technology"}. ${post.content.substring(0, 500)}... Read more on CompCharity dot org.`;
+      const base64Audio = await generateSpeech(textToSpeak);
+      
+      if (base64Audio) {
+        const binary = atob(base64Audio);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "audio/mp3" });
+        const url = URL.createObjectURL(blob);
+        
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => setIsSpeaking(false);
+        audio.play();
+        setIsSpeaking(true);
+      }
+    } catch (error) {
+      console.error("TTS Error:", error);
+      toast.error("Failed to generate audio.");
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -185,9 +233,28 @@ const BlogPost = () => {
                 </div>
                 <div className="space-y-6">
                   <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Actions</div>
-                  <button className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all shadow-sm">
-                    <Bookmark className="w-5 h-5" />
-                  </button>
+                  <div className="flex flex-col gap-4">
+                    <button className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all shadow-sm">
+                      <Bookmark className="w-5 h-5" />
+                    </button>
+                    <button 
+                      onClick={handleListen}
+                      disabled={isGeneratingAudio}
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm ${
+                        isSpeaking 
+                          ? "bg-blue-600 text-white" 
+                          : "bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                      }`}
+                    >
+                      {isGeneratingAudio ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : isSpeaking ? (
+                        <Pause className="w-5 h-5" />
+                      ) : (
+                        <Volume2 className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

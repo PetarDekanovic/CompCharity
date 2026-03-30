@@ -1,33 +1,67 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, Modality } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export const generateChatResponse = async (history: { role: string; parts: { text: string }[] }[], message: string) => {
-  const chat = ai.chats.create({
+  const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
+    contents: [
+      ...history,
+      { role: "user", parts: [{ text: message }] }
+    ],
     config: {
-      systemInstruction: "You are CompCharity Assistant, a helpful AI dedicated to helping users donate or resell their old technology for charity. You can answer questions about the donation process, the types of devices we accept, how we secure data, and the impact of their contributions. Be professional, encouraging, and informative.",
+      systemInstruction: "You are CompCharity Assistant, a helpful AI dedicated to helping users donate or resell their old technology for charity in Ireland. You can answer questions about the donation process, the types of devices we accept, how we secure data, and the impact of their contributions. Use Google Search to provide up-to-date information about local laws, recycling centers, and tech values. Be professional, encouraging, and informative.",
+      tools: [{ googleSearch: {} }]
     },
   });
 
-  // The SDK expects history in a specific format if we were using it directly, 
-  // but for simplicity with the current sendMessage call, we'll just send the message.
-  // Actually, the SDK's chat.sendMessage handles the history if we use the same chat instance.
-  // Since we are likely recreating it or passing history, let's use generateContent for a more stateless approach if needed, 
-  // or manage the chat instance.
-  
-  // For a stateless React component, we can pass the full conversation as contents.
-  const contents = [
-    ...history,
-    { role: "user", parts: [{ text: message }] }
-  ];
+  return response.text;
+};
 
+export const transcribeAudio = async (base64Audio: string, mimeType: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: contents,
+    contents: {
+      parts: [
+        { text: "Transcribe this voice message accurately. If the user is describing a device they want to donate or have collected, focus on capturing the brand, model, condition, and their location if mentioned." },
+        { inlineData: { data: base64Audio, mimeType } }
+      ]
+    }
   });
 
   return response.text;
+};
+
+export const generateSpeech = async (text: string) => {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-preview-tts",
+    contents: [{ parts: [{ text }] }],
+    config: {
+      responseModalities: [Modality.AUDIO],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName: 'Kore' },
+        },
+      },
+    },
+  });
+
+  return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+};
+
+export const findDropOffPoints = async (location: string) => {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: `Find tech recycling drop-off points or CompCharity hubs near ${location} in Ireland.`,
+    config: {
+      tools: [{ googleMaps: {} }]
+    }
+  });
+
+  const text = response.text;
+  const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+  
+  return { text, groundingChunks };
 };
 
 export const analyzeDeviceDescription = async (description: string) => {
