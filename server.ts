@@ -156,7 +156,7 @@ async function startServer() {
                 }, '*');
                 window.close();
               } else {
-                window.location.href = '/';
+                window.location.href = '${process.env.APP_URL || "/"}';
               }
             </script>
             <p>Authentication successful. This window should close automatically.</p>
