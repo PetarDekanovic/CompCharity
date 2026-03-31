@@ -29,13 +29,13 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "compcharity-super-secret-key";
 
-console.log("Environment check:", {
-  NODE_ENV: process.env.NODE_ENV,
-  PORT: process.env.PORT,
-  RESOLVED_PORT: PORT,
-  PWD: process.cwd(),
-  __dirname: __dirname
-});
+console.log(">>> STARTUP DIAGNOSTICS <<<");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("PORT (env):", process.env.PORT);
+console.log("PORT (resolved):", PORT);
+console.log("__dirname:", __dirname);
+console.log("__filename:", __filename);
+console.log("CWD:", process.cwd());
 
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -83,23 +83,14 @@ async function startServer() {
       env: process.env.NODE_ENV,
       port: PORT,
       dirname: __dirname,
+      filename: __filename,
       timestamp: new Date().toISOString()
     });
   });
 
-  // START LISTENING IMMEDIATELY to prevent 503
-  try {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
-    });
-  } catch (err) {
-    console.error("FATAL: Failed to start listener", err);
-  }
-
   // Background Database Sync (Non-blocking)
   if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
     console.log("Initiating background database sync...");
-    // Use a more direct approach for prisma if possible, but keep it backgrounded
     exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
       if (error) console.error(`DB Sync Error: ${error.message}`);
       if (stdout) console.log(`DB Sync Success: ${stdout}`);
@@ -544,7 +535,7 @@ async function startServer() {
   // In production (bundled), __dirname is the 'dist' folder.
   // In development, __dirname is the project root.
   const isProduction = process.env.NODE_ENV === "production" || 
-                       (path.basename(__dirname) === "dist" && fs.existsSync(path.join(__dirname, "index.html")));
+                       (__filename.includes("dist") && fs.existsSync(path.join(__dirname, "index.html")));
 
   if (isProduction) {
     console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
@@ -556,12 +547,30 @@ async function startServer() {
     });
   } else {
     console.log("Mode: DEVELOPMENT - Starting Vite middleware");
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+    try {
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      console.log("Vite middleware attached successfully");
+    } catch (viteErr) {
+      console.error("FATAL: Failed to initialize Vite middleware", viteErr);
+      // Fallback for development if Vite fails
+      app.get("/", (req, res) => {
+        res.status(500).send("Development server error: Vite failed to start. Check console logs.");
+      });
+    }
+  }
+
+  // Start listening after all routes are defined
+  try {
+    app.listen(PORT, () => {
+      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
     });
-    app.use(vite.middlewares);
+  } catch (err) {
+    console.error("FATAL: Failed to start listener", err);
   }
 }
 
