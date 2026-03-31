@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import fs from "fs";
-import sharp from "sharp";
+// import sharp from "sharp"; // Moved to dynamic import for production stability
 import { OAuth2Client } from "google-auth-library";
 import { exec } from "child_process";
 
@@ -26,8 +26,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "compcharity-super-secret-key";
+
+console.log("Environment check:", {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  RESOLVED_PORT: PORT,
+  PWD: process.cwd(),
+  __dirname: __dirname
+});
 
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -67,29 +75,31 @@ async function startServer() {
   const app = express();
   app.use(express.json());
 
+  // Basic diagnostic route - available immediately
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      uptime: process.uptime(),
+      env: process.env.NODE_ENV,
+      port: PORT,
+      dirname: __dirname,
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // START LISTENING IMMEDIATELY to prevent 503
   try {
-    const server = app.listen(PORT, "0.0.0.0", () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
-      console.log(`Server info: NODE_ENV=${process.env.NODE_ENV}, DIR=${__dirname}`);
     });
   } catch (err) {
     console.error("FATAL: Failed to start listener", err);
   }
 
-  // Health check - available immediately
-  app.get("/api/health", (req, res) => {
-    res.json({ 
-      status: "ok", 
-      uptime: process.uptime(),
-      port: PORT,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  // Background Database Sync (Non-blocking, after listen)
+  // Background Database Sync (Non-blocking)
   if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
     console.log("Initiating background database sync...");
+    // Use a more direct approach for prisma if possible, but keep it backgrounded
     exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
       if (error) console.error(`DB Sync Error: ${error.message}`);
       if (stdout) console.log(`DB Sync Success: ${stdout}`);
@@ -539,7 +549,9 @@ async function startServer() {
   if (isProduction) {
     console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
     app.use(express.static(__dirname));
-    app.get("*", (req, res) => {
+    // Serve index.html for all non-API routes
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
       res.sendFile(path.join(__dirname, "index.html"));
     });
   } else {
