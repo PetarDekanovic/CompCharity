@@ -12,6 +12,8 @@ import sharp from "sharp";
 import { OAuth2Client } from "google-auth-library";
 import { exec } from "child_process";
 
+console.log(">>> SERVER SCRIPT LOADING <<<");
+
 // Global error handlers for production stability
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err);
@@ -25,7 +27,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "compcharity-super-secret-key";
 
 const googleClient = new OAuth2Client(
@@ -62,25 +64,23 @@ const upload = multer({
 });
 
 async function startServer() {
+  console.log(">>> INITIALIZING EXPRESS <<<");
   const app = express();
   app.use(express.json());
 
   // Log environment info for debugging
-  console.log(`Server starting...`);
-  console.log(`CWD: ${process.cwd()}`);
-  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`Server info: PORT=${PORT}, NODE_ENV=${process.env.NODE_ENV}, DIR=${__dirname}`);
 
   // Background Database Sync (Non-blocking)
   if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
-    console.log("Initiating background database sync...");
-    exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
-      if (error) {
-        console.error(`DB Sync Error: ${error.message}`);
-        return;
-      }
-      if (stderr) console.error(`DB Sync Stderr: ${stderr}`);
-      console.log(`DB Sync Success: ${stdout}`);
-    });
+    setTimeout(() => {
+      console.log("Initiating background database sync...");
+      exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
+        if (error) console.error(`DB Sync Error: ${error.message}`);
+        if (stderr) console.error(`DB Sync Stderr: ${stderr}`);
+        if (stdout) console.log(`DB Sync Success: ${stdout}`);
+      });
+    }, 5000); // Wait 5 seconds after start to sync
   }
 
   // Health check for production
@@ -88,6 +88,7 @@ async function startServer() {
     res.json({ 
       status: "ok", 
       uptime: process.uptime(),
+      port: PORT,
       timestamp: new Date().toISOString()
     });
   });
@@ -527,14 +528,13 @@ async function startServer() {
   });
 
   // Robust production check
-  const distPath = path.join(process.cwd(), "dist");
-  const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(distPath, "index.html"));
+  const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(__dirname, "index.html"));
 
   if (isProduction) {
-    console.log("Mode: PRODUCTION - Serving static files");
-    app.use(express.static(distPath));
+    console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
+    app.use(express.static(__dirname));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      res.sendFile(path.join(__dirname, "index.html"));
     });
   } else {
     console.log("Mode: DEVELOPMENT - Starting Vite middleware");
@@ -545,9 +545,13 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  });
+  try {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
+    });
+  } catch (err) {
+    console.error("FATAL: Failed to start listener", err);
+  }
 }
 
 startServer();
