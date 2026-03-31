@@ -71,11 +71,23 @@ const upload = multer({
 });
 
 async function startServer() {
-  console.log(">>> INITIALIZING EXPRESS <<<");
+  console.log(">>> STARTING SERVER PROCESS <<<");
   const app = express();
+  
+  // 1. START LISTENING IMMEDIATELY (Critical for Hostinger/Cloud Run health checks)
+  // We use no host to let Node.js decide the best default (usually 0.0.0.0 or localhost)
+  try {
+    app.listen(PORT, () => {
+      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
+      console.log(`>>> DIAGNOSTICS: NODE_ENV=${process.env.NODE_ENV}, PORT=${PORT}, __dirname=${__dirname} <<<`);
+    });
+  } catch (err) {
+    console.error("FATAL: Failed to bind to port", err);
+  }
+
   app.use(express.json());
 
-  // Basic diagnostic route - available immediately
+  // 2. Basic diagnostic route - available immediately
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
@@ -88,7 +100,7 @@ async function startServer() {
     });
   });
 
-  // Background Database Sync (Non-blocking)
+  // 3. Background Database Sync (Non-blocking)
   if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
     console.log("Initiating background database sync...");
     exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
@@ -531,14 +543,20 @@ async function startServer() {
     res.json(contact);
   });
 
-  // Robust production check
-  // In production (bundled), __dirname is the 'dist' folder.
-  // In development, __dirname is the project root.
-  const isProduction = process.env.NODE_ENV === "production" || 
-                       (__filename.includes("dist") && fs.existsSync(path.join(__dirname, "index.html")));
+  // 4. Robust environment detection
+  // We are in production if NODE_ENV is set to production OR if the file is running from a 'dist' directory
+  const isProduction = process.env.NODE_ENV === "production" || __filename.includes("/dist/");
+  console.log(`>>> ENVIRONMENT DETECTION: isProduction=${isProduction}, NODE_ENV=${process.env.NODE_ENV} <<<`);
+
+  // Heartbeat log to verify process is alive in production logs
+  setInterval(() => {
+    if (isProduction) {
+      console.log(`>>> HEARTBEAT: ${new Date().toISOString()} - Uptime: ${Math.floor(process.uptime())}s <<<`);
+    }
+  }, 30000);
 
   if (isProduction) {
-    console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
+    console.log(`Mode: PRODUCTION - Serving static files from ${__dirname}`);
     app.use(express.static(__dirname));
     // Serve index.html for all non-API routes
     app.get("*", (req, res, next) => {
@@ -557,20 +575,10 @@ async function startServer() {
       console.log("Vite middleware attached successfully");
     } catch (viteErr) {
       console.error("FATAL: Failed to initialize Vite middleware", viteErr);
-      // Fallback for development if Vite fails
       app.get("/", (req, res) => {
         res.status(500).send("Development server error: Vite failed to start. Check console logs.");
       });
     }
-  }
-
-  // Start listening after all routes are defined
-  try {
-    app.listen(PORT, () => {
-      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
-    });
-  } catch (err) {
-    console.error("FATAL: Failed to start listener", err);
   }
 }
 
