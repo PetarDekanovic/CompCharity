@@ -5,12 +5,12 @@
   "type": "module",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "prisma generate && prisma db push --accept-data-loss && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:vite --external:@prisma/client --external:sharp --external:path --external:url --external:fs",
-    "start": "node dist/server.js",
+    "build": "prisma generate && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:vite --external:@prisma/client --external:sharp --external:path --external:url --external:fs",
+    "start": "prisma db push --accept-data-loss && node dist/server.js",
     "postinstall": "prisma generate",
     "preview": "vite preview",
     "clean": "rm -rf dist dist-server",
