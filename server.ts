@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createServer as createViteServer } from "vite";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -528,7 +527,9 @@ async function startServer() {
   });
 
   // Robust production check
-  const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(__dirname, "index.html"));
+  // In production (bundled), __dirname is the 'dist' folder.
+  // In development, __dirname is the project root.
+  const isProduction = process.env.NODE_ENV === "production" || (__dirname.endsWith("dist") && fs.existsSync(path.join(__dirname, "index.html")));
 
   if (isProduction) {
     console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
@@ -538,6 +539,7 @@ async function startServer() {
     });
   } else {
     console.log("Mode: DEVELOPMENT - Starting Vite middleware");
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
