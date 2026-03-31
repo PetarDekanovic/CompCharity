@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "prisma generate && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:vite --external:@prisma/client --external:sharp --external:path --external:url --external:fs",
-    "start": "prisma db push --accept-data-loss && node dist/server.js",
+    "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "preview": "vite preview",
     "clean": "rm -rf dist dist-server",

@@ -10,6 +10,7 @@ import multer from "multer";
 import fs from "fs";
 import sharp from "sharp";
 import { OAuth2Client } from "google-auth-library";
+import { exec } from "child_process";
 
 // Global error handlers for production stability
 process.on("uncaughtException", (err) => {
@@ -64,9 +65,31 @@ async function startServer() {
   const app = express();
   app.use(express.json());
 
+  // Log environment info for debugging
+  console.log(`Server starting...`);
+  console.log(`CWD: ${process.cwd()}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+
+  // Background Database Sync (Non-blocking)
+  if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
+    console.log("Initiating background database sync...");
+    exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
+      if (error) {
+        console.error(`DB Sync Error: ${error.message}`);
+        return;
+      }
+      if (stderr) console.error(`DB Sync Stderr: ${stderr}`);
+      console.log(`DB Sync Success: ${stdout}`);
+    });
+  }
+
   // Health check for production
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", env: process.env.NODE_ENV });
+    res.json({ 
+      status: "ok", 
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    });
   });
 
   // Static files for uploads
@@ -503,27 +526,23 @@ async function startServer() {
     res.json(contact);
   });
 
-  // Log environment info for debugging
-  console.log(`Current Working Directory: ${process.cwd()}`);
-  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-
-  // Robust production check: if NODE_ENV is 'production' OR if dist/index.html exists
+  // Robust production check
   const distPath = path.join(process.cwd(), "dist");
   const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(distPath, "index.html"));
 
-  if (!isProduction) {
-    console.log("Starting in DEVELOPMENT mode with Vite middleware...");
+  if (isProduction) {
+    console.log("Mode: PRODUCTION - Serving static files");
+    app.use(express.static(distPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  } else {
+    console.log("Mode: DEVELOPMENT - Starting Vite middleware");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
-    console.log("Starting in PRODUCTION mode, serving static files from dist...");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
