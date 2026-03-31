@@ -68,10 +68,14 @@ async function startServer() {
   app.use(express.json());
 
   // START LISTENING IMMEDIATELY to prevent 503
-  const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
-    console.log(`Server info: NODE_ENV=${process.env.NODE_ENV}, DIR=${__dirname}`);
-  });
+  try {
+    const server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
+      console.log(`Server info: NODE_ENV=${process.env.NODE_ENV}, DIR=${__dirname}`);
+    });
+  } catch (err) {
+    console.error("FATAL: Failed to start listener", err);
+  }
 
   // Health check - available immediately
   app.get("/api/health", (req, res) => {
@@ -527,7 +531,10 @@ async function startServer() {
   });
 
   // Robust production check
-  const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(__dirname, "index.html"));
+  // In production (bundled), __dirname is the 'dist' folder.
+  // In development, __dirname is the project root.
+  const isProduction = process.env.NODE_ENV === "production" || 
+                       (path.basename(__dirname) === "dist" && fs.existsSync(path.join(__dirname, "index.html")));
 
   if (isProduction) {
     console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
