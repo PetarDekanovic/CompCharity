@@ -67,22 +67,13 @@ async function startServer() {
   const app = express();
   app.use(express.json());
 
-  // Log environment info for debugging
-  console.log(`Server info: PORT=${PORT}, NODE_ENV=${process.env.NODE_ENV}, DIR=${__dirname}`);
+  // START LISTENING IMMEDIATELY to prevent 503
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
+    console.log(`Server info: NODE_ENV=${process.env.NODE_ENV}, DIR=${__dirname}`);
+  });
 
-  // Background Database Sync (Non-blocking)
-  if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
-    setTimeout(() => {
-      console.log("Initiating background database sync...");
-      exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
-        if (error) console.error(`DB Sync Error: ${error.message}`);
-        if (stderr) console.error(`DB Sync Stderr: ${stderr}`);
-        if (stdout) console.log(`DB Sync Success: ${stdout}`);
-      });
-    }, 5000); // Wait 5 seconds after start to sync
-  }
-
-  // Health check for production
+  // Health check - available immediately
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
@@ -91,6 +82,15 @@ async function startServer() {
       timestamp: new Date().toISOString()
     });
   });
+
+  // Background Database Sync (Non-blocking, after listen)
+  if (process.env.NODE_ENV === "production" || process.env.SYNC_DB === "true") {
+    console.log("Initiating background database sync...");
+    exec("npx prisma db push --accept-data-loss", (error, stdout, stderr) => {
+      if (error) console.error(`DB Sync Error: ${error.message}`);
+      if (stdout) console.log(`DB Sync Success: ${stdout}`);
+    });
+  }
 
   // Static files for uploads
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -527,9 +527,7 @@ async function startServer() {
   });
 
   // Robust production check
-  // In production (bundled), __dirname is the 'dist' folder.
-  // In development, __dirname is the project root.
-  const isProduction = process.env.NODE_ENV === "production" || (__dirname.endsWith("dist") && fs.existsSync(path.join(__dirname, "index.html")));
+  const isProduction = process.env.NODE_ENV === "production" || fs.existsSync(path.join(__dirname, "index.html"));
 
   if (isProduction) {
     console.log(`Mode: PRODUCTION - Serving from ${__dirname}`);
@@ -545,14 +543,6 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
-  }
-
-  try {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`>>> SERVER LISTENING ON PORT ${PORT} <<<`);
-    });
-  } catch (err) {
-    console.error("FATAL: Failed to start listener", err);
   }
 }
 
