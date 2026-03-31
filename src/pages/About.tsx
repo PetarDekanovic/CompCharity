@@ -83,7 +83,7 @@ const About = () => {
                 transition={{ delay: 0.5 }}
                 className="text-xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed"
               >
-                CompCharity is a social impact platform dedicated to bridging the digital divide in Ireland by transforming unused technology into opportunity.
+                CompCharity is a social impact platform dedicated to bridging the digital divide in Ireland by transforming unused technology into opportunity!!.
               </motion.p>
             </div>
           </div>
