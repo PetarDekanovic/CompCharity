@@ -12,10 +12,10 @@ import { execSync } from "child_process";
 
 // --- EMERGENCY LOGGING (Direct to stdout) ---
 const log = (msg: string) => {
-  const entry = `[${new Date().toISOString()}] ${msg}\n`;
-  process.stdout.write(entry);
+  const entry = `[${new Date().toISOString()}] ${msg}`;
+  console.log(entry);
   try {
-    fs.appendFileSync(path.join(process.cwd(), "boot.log"), entry);
+    fs.appendFileSync(path.join(process.cwd(), "boot.log"), entry + "\n");
   } catch (e) {}
 };
 
@@ -53,7 +53,12 @@ const rootDir = isDist ? path.resolve(_dirname, "..") : _dirname;
 const publicDir = isDist ? _dirname : path.join(_dirname, "dist");
 
 log(`>>> DIR DIAGNOSTICS: DIRNAME=${_dirname}, ROOT=${rootDir}, PUBLIC=${publicDir}, IS_DIST=${isDist} <<<`);
+// --- ENV DIAGNOSTICS ---
 log(`>>> ENV DIAGNOSTICS: DATABASE_URL=${process.env.DATABASE_URL ? "SET" : "MISSING"}, JWT_SECRET=${process.env.JWT_SECRET ? "SET" : "MISSING"}, NODE_ENV=${process.env.NODE_ENV} <<<`);
+
+if (!process.env.DATABASE_URL) {
+  log("!!! CRITICAL: DATABASE_URL IS MISSING. DATABASE OPERATIONS WILL FAIL !!!");
+}
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const app = express();
@@ -167,6 +172,39 @@ const isAdmin = (req: any, res: any, next: any) => {
 
 // --- ROUTES ---
 
+// System Check
+app.get("/api/system/check", async (req, res) => {
+  const db = getPrisma();
+  let dbStatus = "Checking...";
+  let dbError = null;
+
+  if (!db) {
+    dbStatus = "Prisma Client failed to initialize";
+  } else {
+    try {
+      await db.$queryRaw`SELECT 1`;
+      dbStatus = "Connected";
+    } catch (e: any) {
+      dbStatus = "Connection Failed";
+      dbError = e.message;
+    }
+  }
+
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    database: {
+      status: dbStatus,
+      error: dbError,
+      urlSet: !!process.env.DATABASE_URL
+    },
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      JWT_SECRET_SET: !!process.env.JWT_SECRET
+    }
+  });
+});
+
 // Health Check
 app.get("/api/health", (req, res) => {
   res.json({ 
@@ -218,7 +256,10 @@ app.post("/api/auth/login", async (req, res) => {
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
     log(`Login Error: ${error.message}\nStack: ${error.stack}`);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ 
+      error: "Internal server error", 
+      details: process.env.NODE_ENV === "production" ? "Check server logs" : error.message 
+    });
   }
 });
 
