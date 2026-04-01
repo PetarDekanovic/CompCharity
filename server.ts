@@ -25,26 +25,37 @@ log(">>> NODE PROCESS INITIALIZING <<<");
 dotenv.config();
 
 // --- DATABASE SYNC ---
-try {
-  log(`>>> CURRENT WORKING DIRECTORY: ${process.cwd()} <<<`);
-  const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
-  const prismaBin = path.join(process.cwd(), "node_modules", ".bin", "prisma");
-  
-  if (fs.existsSync(schemaPath)) {
-    log(">>> SYNCING DATABASE SCHEMA <<<");
-    // Use the direct path to prisma binary for reliability
-    const cmd = `"${prismaBin}" db push --accept-data-loss --schema="${schemaPath}"`;
-    execSync(cmd, { stdio: 'inherit' });
-    log(">>> DATABASE SCHEMA SYNCED <<<");
-  } else {
-    log(`!!! SCHEMA NOT FOUND AT ${schemaPath} !!!`);
-  }
-} catch (e: any) {
-  log(`>>> DATABASE SYNC ERROR: ${e.message} <<<`);
-  if (e.message.includes("malformed") || e.message.includes("SqliteError")) {
-    log("!!! CRITICAL: DATABASE FILE IS CORRUPTED (MALFORMED) !!!");
+const dbPath = path.join(process.cwd(), "prisma", "dev.db");
+
+function syncDatabase() {
+  try {
+    const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
+    const prismaBin = path.join(process.cwd(), "node_modules", ".bin", "prisma");
+    
+    if (fs.existsSync(schemaPath)) {
+      log(">>> SYNCING DATABASE SCHEMA <<<");
+      const cmd = `"${prismaBin}" db push --accept-data-loss --schema="${schemaPath}"`;
+      execSync(cmd, { stdio: 'inherit' });
+      log(">>> DATABASE SCHEMA SYNCED <<<");
+    }
+  } catch (e: any) {
+    log(`>>> DATABASE SYNC ERROR: ${e.message} <<<`);
+    if (e.message.includes("malformed") || e.message.includes("SqliteError")) {
+      log("!!! CRITICAL: DATABASE CORRUPTION DETECTED. ATTEMPTING AUTO-REPAIR !!!");
+      try {
+        if (fs.existsSync(dbPath)) {
+          fs.unlinkSync(dbPath);
+          log(">>> CORRUPTED DATABASE DELETED. RETRYING SYNC... <<<");
+          syncDatabase(); // Recursive retry once
+        }
+      } catch (unlinkErr: any) {
+        log(`>>> AUTO-REPAIR FAILED: ${unlinkErr.message} <<<`);
+      }
+    }
   }
 }
+
+syncDatabase();
 
 // --- DIRECTORY DETECTION ---
 let _dirname: string;
