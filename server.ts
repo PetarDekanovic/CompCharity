@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import { OAuth2Client } from "google-auth-library";
+import { execSync } from "child_process";
 
 // --- EMERGENCY LOGGING (Direct to stdout) ---
 const log = (msg: string) => {
@@ -22,6 +23,15 @@ log(">>> NODE PROCESS INITIALIZING <<<");
 
 // Initialize environment variables
 dotenv.config();
+
+// --- DATABASE SYNC ---
+try {
+  log(">>> SYNCING DATABASE SCHEMA <<<");
+  execSync("npx prisma db push --accept-data-loss", { stdio: 'inherit' });
+  log(">>> DATABASE SCHEMA SYNCED <<<");
+} catch (e: any) {
+  log(`>>> DATABASE SYNC ERROR: ${e.message} <<<`);
+}
 
 // --- DIRECTORY DETECTION ---
 let _dirname: string;
@@ -64,7 +74,29 @@ const getPrisma = () => {
     try {
       prisma = new PrismaClient();
       prisma.$connect()
-        .then(() => log(">>> DATABASE CONNECTED SUCCESSFULLY <<<"))
+        .then(async () => {
+          log(">>> DATABASE CONNECTED SUCCESSFULLY <<<");
+          // Auto-seed admin
+          try {
+            const adminEmail = 'admin@compcharity.org';
+            const existing = await prisma!.user.findUnique({ where: { email: adminEmail } });
+            if (!existing) {
+              log(">>> SEEDING ADMIN USER <<<");
+              const hashedPassword = await bcrypt.hash('adminpassword123', 10);
+              await prisma!.user.create({
+                data: {
+                  email: adminEmail,
+                  password: hashedPassword,
+                  name: 'Admin',
+                  role: 'ADMIN'
+                }
+              });
+              log(">>> ADMIN USER SEEDED <<<");
+            }
+          } catch (seedErr: any) {
+            log(`Seed Error: ${seedErr.message}`);
+          }
+        })
         .catch(e => log(`Prisma Connect Error: ${e.message}`));
     } catch (e: any) {
       log(`Prisma Init Error: ${e.message}`);
