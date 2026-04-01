@@ -2,14 +2,14 @@
   "name": "react-example",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
   "main": "dist/server.js",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "mkdir -p dist && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:@prisma/client --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && date > dist/version.txt",
+    "build": "mkdir -p dist && vite build && esbuild server.ts --bundle --platform=node --format=cjs --outfile=dist/server.js --external:@prisma/client && date > dist/version.txt",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "preview": "vite preview",
