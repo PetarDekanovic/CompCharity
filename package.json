@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "prisma generate && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:vite --external:@prisma/client --external:sharp --external:path --external:url --external:fs",
+    "build": "mkdir -p dist && vite build && esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:@prisma/client --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && date > dist/version.txt",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "preview": "vite preview",
@@ -45,7 +45,7 @@
     "react-hook-form": "^7.72.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.2.0",
-    "sharp": "^0.34.5",
+    "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "vite": "^6.2.0",
