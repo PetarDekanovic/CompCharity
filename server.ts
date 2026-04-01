@@ -31,6 +31,10 @@ try {
   log(">>> DATABASE SCHEMA SYNCED <<<");
 } catch (e: any) {
   log(`>>> DATABASE SYNC ERROR: ${e.message} <<<`);
+  if (e.message.includes("malformed") || e.message.includes("SqliteError")) {
+    log("!!! CRITICAL: DATABASE FILE IS CORRUPTED (MALFORMED) !!!");
+    log("!!! ACTION REQUIRED: Delete 'prisma/dev.db' in File Manager and redeploy !!!");
+  }
 }
 
 // --- DIRECTORY DETECTION ---
