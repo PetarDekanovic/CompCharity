@@ -63,7 +63,9 @@ const getPrisma = () => {
   if (!prisma) {
     try {
       prisma = new PrismaClient();
-      prisma.$connect().catch(e => log(`Prisma Connect Error: ${e.message}`));
+      prisma.$connect()
+        .then(() => log(">>> DATABASE CONNECTED SUCCESSFULLY <<<"))
+        .catch(e => log(`Prisma Connect Error: ${e.message}`));
     } catch (e: any) {
       log(`Prisma Init Error: ${e.message}`);
     }
@@ -183,7 +185,7 @@ app.post("/api/auth/login", async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
-    log(`Login Error: ${error.message}`);
+    log(`Login Error: ${error.message}\nStack: ${error.stack}`);
     res.status(500).json({ error: "Internal server error" });
   }
 });
