@@ -184,6 +184,32 @@ app.get("/api/system/check", async (req, res) => {
     try {
       await db.$queryRaw`SELECT 1`;
       dbStatus = "Connected";
+      
+      // Additional checks
+      try {
+        const userCount = await db.user.count();
+        const admin = await db.user.findUnique({ where: { email: 'admin@compcharity.org' } });
+        
+        return res.json({
+          status: "ok",
+          timestamp: new Date().toISOString(),
+          database: {
+            status: dbStatus,
+            error: null,
+            urlSet: !!process.env.DATABASE_URL,
+            userCount,
+            adminExists: !!admin,
+            adminRole: admin?.role
+          },
+          env: {
+            NODE_ENV: process.env.NODE_ENV,
+            JWT_SECRET_SET: !!process.env.JWT_SECRET
+          }
+        });
+      } catch (tableErr: any) {
+        dbStatus = "Table Check Failed";
+        dbError = tableErr.message;
+      }
     } catch (e: any) {
       dbStatus = "Connection Failed";
       dbError = e.message;
@@ -247,18 +273,26 @@ app.post("/api/auth/login", async (req, res) => {
 
   try {
     const user = await db.user.findUnique({ where: { email } });
-    if (!user || !user.password) return res.status(401).json({ error: "Invalid credentials" });
+    if (!user || !user.password) {
+      log(`Login failed: User not found or no password for ${email}`);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
     
     const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ error: "Invalid credentials" });
+    if (!isValid) {
+      log(`Login failed: Invalid password for ${email}`);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
+    log(`Login success: ${email} (${user.role})`);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   } catch (error: any) {
-    log(`Login Error: ${error.message}\nStack: ${error.stack}`);
+    log(`CRITICAL LOGIN ERROR: ${error.message}\nStack: ${error.stack}`);
     res.status(500).json({ 
       error: "Internal server error", 
-      details: process.env.NODE_ENV === "production" ? "Check server logs" : error.message 
+      details: error.message,
+      stack: process.env.NODE_ENV === "production" ? undefined : error.stack
     });
   }
 });
