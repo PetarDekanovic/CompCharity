@@ -25,12 +25,29 @@ log(">>> NODE PROCESS INITIALIZING <<<");
 dotenv.config();
 
 // --- DATABASE SYNC ---
-const dbPath = path.join(process.cwd(), "prisma", "dev.db");
+let rootDir: string;
+try {
+  // @ts-ignore
+  if (typeof __dirname !== 'undefined') {
+    // @ts-ignore
+    rootDir = path.resolve(__dirname, "..");
+  } else {
+    // @ts-ignore
+    rootDir = path.dirname(fileURLToPath(import.meta.url));
+    if (rootDir.endsWith("dist") || rootDir.includes("/dist")) {
+      rootDir = path.resolve(rootDir, "..");
+    }
+  }
+} catch (e) {
+  rootDir = process.cwd();
+}
+
+const dbPath = path.join(rootDir, "prisma", "dev.db");
 
 function syncDatabase() {
   try {
-    const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
-    const prismaBin = path.join(process.cwd(), "node_modules", ".bin", "prisma");
+    const schemaPath = path.join(rootDir, "prisma", "schema.prisma");
+    const prismaBin = path.join(rootDir, "node_modules", ".bin", "prisma");
     
     if (fs.existsSync(schemaPath)) {
       log(">>> SYNCING DATABASE SCHEMA <<<");
@@ -73,7 +90,7 @@ try {
 }
 
 const isDist = _dirname.endsWith("dist") || _dirname.includes("/dist");
-const rootDir = isDist ? path.resolve(_dirname, "..") : _dirname;
+// rootDir is already defined above
 const publicDir = isDist ? _dirname : path.join(_dirname, "dist");
 
 log(`>>> DIR DIAGNOSTICS: DIRNAME=${_dirname}, ROOT=${rootDir}, PUBLIC=${publicDir}, IS_DIST=${isDist} <<<`);
@@ -194,6 +211,22 @@ const isAdmin = (req: any, res: any, next: any) => {
   next();
 };
 
+// Emergency Database Reset
+app.get("/api/system/reset-db", (req, res) => {
+  try {
+    if (fs.existsSync(dbPath)) {
+      fs.unlinkSync(dbPath);
+      log(">>> MANUAL DATABASE RESET TRIGGERED <<<");
+      syncDatabase();
+      return res.json({ status: "ok", message: "Database file deleted and sync triggered. Refresh system check." });
+    } else {
+      return res.json({ status: "error", message: "Database file not found at " + dbPath });
+    }
+  } catch (e: any) {
+    return res.status(500).json({ status: "error", message: e.message });
+  }
+});
+
 // --- ROUTES ---
 
 // System Check
@@ -237,6 +270,24 @@ app.get("/api/system/check", async (req, res) => {
     } catch (e: any) {
       dbStatus = "Connection Failed";
       dbError = e.message;
+
+      // AUTO-REPAIR TRIGGER
+      if (e.message.includes("malformed") || e.message.includes("SqliteError")) {
+        log("!!! SYSTEM CHECK DETECTED CORRUPTION. TRIGGERING REPAIR !!!");
+        try {
+          if (fs.existsSync(dbPath)) {
+            fs.unlinkSync(dbPath);
+            log(">>> CORRUPTED DATABASE DELETED. RESTARTING SYNC... <<<");
+            syncDatabase();
+            return res.status(503).json({
+              status: "repairing",
+              message: "Database corruption detected and deleted. Please refresh in 5 seconds."
+            });
+          }
+        } catch (repairErr: any) {
+          log(`>>> SYSTEM CHECK REPAIR FAILED: ${repairErr.message} <<<`);
+        }
+      }
     }
   }
 
