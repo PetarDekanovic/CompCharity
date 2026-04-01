@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "mkdir -p dist && vite build && esbuild server.ts --bundle --platform=node --format=cjs --outfile=dist/server.js --external:@prisma/client && date > dist/version.txt",
+    "build": "mkdir -p dist && vite build && esbuild server.ts --bundle --platform=node --format=cjs --outfile=dist/server.js --external:@prisma/client && prisma db push && tsx prisma/seed.ts && date > dist/version.txt",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "preview": "vite preview",
