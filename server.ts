@@ -42,12 +42,22 @@ try {
   rootDir = process.cwd();
 }
 
-const dbPath = path.join(rootDir, "prisma", "dev.db");
+const getDbPath = () => {
+  if (process.env.DATABASE_URL?.startsWith("file:")) {
+    const relativePath = process.env.DATABASE_URL.replace("file:", "");
+    return path.resolve(rootDir, relativePath);
+  }
+  return path.join(rootDir, "prisma", "dev.db");
+};
+
+const dbPath = getDbPath();
 
 function syncDatabase() {
   try {
     const schemaPath = path.join(rootDir, "prisma", "schema.prisma");
     const prismaBin = path.join(rootDir, "node_modules", ".bin", "prisma");
+    
+    log(`>>> DATABASE PATH: ${dbPath} <<<`);
     
     if (fs.existsSync(schemaPath)) {
       log(">>> SYNCING DATABASE SCHEMA <<<");
@@ -60,10 +70,19 @@ function syncDatabase() {
     if (e.message.includes("malformed") || e.message.includes("SqliteError")) {
       log("!!! CRITICAL: DATABASE CORRUPTION DETECTED. ATTEMPTING AUTO-REPAIR !!!");
       try {
-        if (fs.existsSync(dbPath)) {
-          fs.unlinkSync(dbPath);
-          log(">>> CORRUPTED DATABASE DELETED. RETRYING SYNC... <<<");
-          syncDatabase(); // Recursive retry once
+        const currentDbPath = getDbPath();
+        if (fs.existsSync(currentDbPath)) {
+          fs.unlinkSync(currentDbPath);
+          log(`>>> CORRUPTED DATABASE DELETED AT ${currentDbPath}. RETRYING SYNC... <<<`);
+          syncDatabase(); 
+        } else {
+          // Try fallback location
+          const fallbackPath = path.join(rootDir, "dev.db");
+          if (fs.existsSync(fallbackPath)) {
+            fs.unlinkSync(fallbackPath);
+            log(`>>> CORRUPTED DATABASE DELETED AT FALLBACK ${fallbackPath}. RETRYING SYNC... <<<`);
+            syncDatabase();
+          }
         }
       } catch (unlinkErr: any) {
         log(`>>> AUTO-REPAIR FAILED: ${unlinkErr.message} <<<`);
@@ -214,13 +233,30 @@ const isAdmin = (req: any, res: any, next: any) => {
 // Emergency Database Reset
 app.get("/api/system/reset-db", (req, res) => {
   try {
-    if (fs.existsSync(dbPath)) {
-      fs.unlinkSync(dbPath);
-      log(">>> MANUAL DATABASE RESET TRIGGERED <<<");
+    const currentDbPath = getDbPath();
+    const fallbackPath = path.join(rootDir, "dev.db");
+    let deleted = false;
+    let pathsChecked = [currentDbPath, fallbackPath];
+
+    if (fs.existsSync(currentDbPath)) {
+      fs.unlinkSync(currentDbPath);
+      deleted = true;
+    }
+    
+    if (fs.existsSync(fallbackPath)) {
+      fs.unlinkSync(fallbackPath);
+      deleted = true;
+    }
+
+    if (deleted) {
+      log(">>> MANUAL DATABASE RESET TRIGGERED AND EXECUTED <<<");
       syncDatabase();
-      return res.json({ status: "ok", message: "Database file deleted and sync triggered. Refresh system check." });
+      return res.json({ status: "ok", message: "Database file(s) deleted and sync triggered. Refresh system check." });
     } else {
-      return res.json({ status: "error", message: "Database file not found at " + dbPath });
+      return res.json({ 
+        status: "error", 
+        message: "Database file not found. Paths checked: " + pathsChecked.join(", ") 
+      });
     }
   } catch (e: any) {
     return res.status(500).json({ status: "error", message: e.message });
@@ -254,6 +290,7 @@ app.get("/api/system/check", async (req, res) => {
             status: dbStatus,
             error: null,
             urlSet: !!process.env.DATABASE_URL,
+            dbPath: getDbPath(),
             userCount,
             adminExists: !!admin,
             adminRole: admin?.role
