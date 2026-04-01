@@ -32,7 +32,8 @@ const Auth = () => {
   // Redirect if already logged in
   React.useEffect(() => {
     if (user) {
-      navigate(user.role === "admin" ? "/admin" : "/dashboard");
+      console.log("Auth Page: User detected, redirecting. Role:", user.role);
+      navigate(user.role?.toUpperCase() === "ADMIN" ? "/admin" : "/dashboard");
     }
   }, [user, navigate]);
 
@@ -97,21 +98,26 @@ const Auth = () => {
   });
 
   const onSubmit = async (data: any) => {
+    console.log("Auth Page: Submitting form. Mode:", isLogin ? "Login" : "Register");
     setIsLoading(true);
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+      console.log("Auth Page: Fetching endpoint:", endpoint);
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
+      console.log("Auth Page: Response status:", response.status);
       const result = await response.json();
 
       if (!response.ok) {
+        console.error("Auth Page: Error response:", result);
         throw new Error(result.error || "Authentication failed");
       }
 
+      console.log("Auth Page: Login successful. Role:", result.user.role);
       // Store token and user in localStorage
       localStorage.setItem('token', result.token);
       localStorage.setItem('user', JSON.stringify(result.user));
@@ -119,8 +125,10 @@ const Auth = () => {
       toast.success(isLogin ? "Welcome back!" : "Account created successfully!");
       
       // Force a reload to refresh the AuthProvider state
+      console.log("Auth Page: Reloading window...");
       window.location.reload();
     } catch (error: any) {
+      console.error("Auth Page: Catch error:", error);
       toast.error(error.message || "Authentication failed");
     } finally {
       setIsLoading(false);
@@ -261,13 +269,33 @@ const Auth = () => {
               Sign in with Google
             </button>
 
-            <div className="mt-12 text-center">
+            <div className="mt-12 text-center space-y-4">
               <button
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-lg font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                className="text-lg font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors block w-full"
               >
                 {isLogin ? "Don't have an account? Register" : "Already have an account? Sign in"}
               </button>
+              
+              <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-widest font-bold">Troubleshooting</p>
+                <button
+                  onClick={async () => {
+                    if (window.confirm("This will reset the database to fix corruption. Admin user will be recreated. Continue?")) {
+                      try {
+                        const res = await fetch("/api/system/reset-db");
+                        const data = await res.json();
+                        toast.success(data.message || "Database reset triggered!");
+                      } catch (e) {
+                        toast.error("Failed to trigger reset");
+                      }
+                    }
+                  }}
+                  className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  Database Error? Click here to Reset
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
