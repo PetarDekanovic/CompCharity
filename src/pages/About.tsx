@@ -72,7 +72,7 @@ const About = () => {
                 </div>
                 <h1 className="text-[12vw] lg:text-[110px] font-bold tracking-tighter leading-[0.85] text-gray-900 dark:text-white mb-12">
                   Technology with <br />
-                  <span className="text-blue-600 dark:text-blue-400 italic font-serif">Purpose.</span>
+                  <span className="text-blue-600 dark:text-blue-400 italic font-serif">Purpose❤️.</span>
                 </h1>
               </motion.div>
             </div>
