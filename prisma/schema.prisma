@@ -119,7 +119,7 @@ model FAQItem {
 }
 
 model Testimonial {
-  id        String   @id @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   role      String?
   content   String
