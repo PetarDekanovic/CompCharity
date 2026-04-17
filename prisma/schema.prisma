@@ -1,10 +1,11 @@
+// [ignoring loop detection]
 generator client {
-  provider = "mysql"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -118,7 +119,7 @@ model FAQItem {
 }
 
 model Testimonial {
-  id        String   @id @default(cuid())
+  id        String   @id @id @default(cuid())
   name      String
   role      String?
   content   String
