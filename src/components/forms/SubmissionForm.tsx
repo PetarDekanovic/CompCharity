@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, ArrowRight, Camera, Info, CheckCircle } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props { type: "DONATION" | "RESALE"; }
 
-export const SubmissionForm = ({ type }: Props) => {
+const SubmissionForm = ({ type }: Props) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ brand: "", model: "", category: "Laptop", condition: "Working", description: "" });
   const navigate = useNavigate();
@@ -27,7 +27,8 @@ export const SubmissionForm = ({ type }: Props) => {
         body: JSON.stringify({ ...formData, type }),
       });
 
-      if (!response.ok) throw new Error("Failed to submit");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to submit");
 
       toast.success("Submission successful!");
       navigate("/dashboard");
@@ -63,3 +64,5 @@ export const SubmissionForm = ({ type }: Props) => {
     </form>
   );
 };
+
+export default SubmissionForm;
