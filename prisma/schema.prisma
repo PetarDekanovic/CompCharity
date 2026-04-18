@@ -12,6 +12,11 @@ model User {
   email         String       @unique
   password      String?
   name          String?
+  phone         String?
+  address       String?
+  city          String?
+  county        String?
+  eircode       String?
   googleId      String?      @unique
   role          String       @default("USER") // GUEST, USER, ADMIN
   createdAt     DateTime     @default(now())
@@ -28,7 +33,10 @@ model Submission {
   fullName            String
   email               String
   phone               String
-  location            String            // County/City in Ireland
+  address             String?
+  city                String?
+  location            String            // County in Ireland
+  eircode             String?
   type                String            // DONATION, RESALE
   category            String            // Laptop, Desktop, etc.
   brand               String
@@ -39,6 +47,9 @@ model Submission {
   accessories         String?
   preferredOutcome    String?           // For resale: Charity, Shared, Decided Later
   collectionPreference String           // Collection, Drop-off
+  collectionDate      DateTime?         // Scheduled collection date/time
+  estimatedPrice      Float?            // For resale 'deadline' buying
+  youtubeUrl          String?           // Video demonstration
   status              String            @default("SUBMITTED")
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt

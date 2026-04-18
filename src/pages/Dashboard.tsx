@@ -24,8 +24,59 @@ const Dashboard = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [activeTab, setActiveTab] = useState<"assets" | "profile">("assets");
+  const [profileLoading, setProfileLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+  const [profileData, setProfileData] = useState({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    county: user?.county || "",
+    eircode: user?.eircode || "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.name || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        city: user.city || "",
+        county: user.county || "",
+        eircode: user.eircode || "",
+      });
+    }
+  }, [user]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/users/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData)
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        localStorage.setItem("user", JSON.stringify(updated));
+        toast.success("Profile updated successfully!");
+        // We might want to trigger a refresh of useAuth state if it doesn't happen automatically
+      } else {
+        throw new Error("Failed to update profile");
+      }
+    } catch (err) {
+      toast.error("Error updating profile");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
     console.log("Dashboard: useEffect running. User:", user);
@@ -141,9 +192,9 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[var(--background)] transition-colors duration-300">
       {/* Header Section */}
-      <header className="pt-32 pb-12 border-b border-gray-100 dark:border-gray-800">
+      <header className="pt-32 pb-0 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -192,13 +243,40 @@ const Dashboard = () => {
               </motion.div>
             </div>
           </div>
+
+          {/* Navigation Tabs */}
+          <div className="flex gap-8">
+            <button 
+              onClick={() => setActiveTab("assets")}
+              className={`pb-4 text-xs font-bold uppercase tracking-widest border-b-2 transition-all ${
+                activeTab === "assets" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              My Assets
+            </button>
+            <button 
+              onClick={() => setActiveTab("profile")}
+              className={`pb-4 text-xs font-bold uppercase tracking-widest border-b-2 transition-all ${
+                activeTab === "profile" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              Profile Settings
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
+        <AnimatePresence mode="wait">
+          {activeTab === "assets" ? (
+            <motion.div 
+              key="assets"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-12"
+            >          
           {/* List Section */}
           <div className="lg:col-span-7 space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
@@ -418,7 +496,115 @@ const Dashboard = () => {
               </AnimatePresence>
             </div>
           </div>
-        </div>
+        </motion.div>
+          ) : (
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-4xl mx-auto w-full"
+            >
+              <div className="bg-white dark:bg-gray-900 p-8 lg:p-16 rounded-[64px] shadow-2xl shadow-blue-100/50 dark:shadow-none border border-gray-50 dark:border-gray-800">
+                <div className="mb-12">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tighter mb-4">Profile Information</h2>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">Provide your address and contact details for easier collections.</p>
+                </div>
+
+                <form onSubmit={handleUpdateProfile} className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Full Name</label>
+                      <input 
+                        type="text"
+                        value={profileData.name}
+                        onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
+                      <input 
+                        type="tel"
+                        value={profileData.phone}
+                        onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                        placeholder="+353 8X XXX XXXX"
+                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Street Address</label>
+                    <input 
+                      type="text"
+                      value={profileData.address}
+                      onChange={(e) => setProfileData({...profileData, address: e.target.value})}
+                      placeholder="Street name, building number..."
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City</label>
+                      <input 
+                        type="text"
+                        value={profileData.city}
+                        onChange={(e) => setProfileData({...profileData, city: e.target.value})}
+                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">County</label>
+                      <select 
+                        value={profileData.county}
+                        onChange={(e) => setProfileData({...profileData, county: e.target.value})}
+                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white appearance-none"
+                      >
+                        <option value="">Select County</option>
+                        <option value="Dublin">Dublin</option>
+                        <option value="Cork">Cork</option>
+                        <option value="Galway">Galway</option>
+                        {/* Adding more counties inline for better UX */}
+                        <option value="Limerick">Limerick</option>
+                        <option value="Waterford">Waterford</option>
+                        <option value="Wicklow">Wicklow</option>
+                        <option value="Kildare">Kildare</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Eircode (Optional)</label>
+                    <input 
+                      type="text"
+                      value={profileData.eircode}
+                      onChange={(e) => setProfileData({...profileData, eircode: e.target.value})}
+                      placeholder="e.g. D02 XN52"
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white uppercase"
+                    />
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={profileLoading}
+                    type="submit"
+                    className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 dark:shadow-none flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {profileLoading ? (
+                      <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>Save Profile Changes <ShieldCheck className="w-6 h-6" /></>
+                    )}
+                  </motion.button>
+                </form>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

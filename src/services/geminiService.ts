@@ -2,6 +2,10 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
+if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "") {
+  console.warn("GEMINI_API_KEY is missing. AI features will not work.");
+}
+
 export const generateChatResponse = async (history: { role: string; parts: { text: string }[] }[], message: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",

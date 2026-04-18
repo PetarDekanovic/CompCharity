@@ -328,7 +328,7 @@ app.post("/api/auth/register", async (req, res) => {
       data: { email, password: hashedPassword, name, role: "USER" },
     });
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, address: user.address, city: user.city, county: user.county, eircode: user.eircode } });
   } catch (error) {
     res.status(400).json({ error: "User already exists" });
   }
@@ -356,7 +356,7 @@ app.post("/api/auth/login", async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
     log(`Login success: ${email} (${user.role})`);
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, address: user.address, city: user.city, county: user.county, eircode: user.eircode } });
   } catch (error: any) {
     log(`CRITICAL LOGIN ERROR: ${error.message}\nStack: ${error.stack}`);
     res.status(500).json({ 
@@ -440,7 +440,7 @@ app.get("/api/auth/callback/google", async (req, res) => {
               window.opener.postMessage({ 
                 type: 'OAUTH_AUTH_SUCCESS',
                 token: '${token}',
-                user: ${JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role })}
+                user: ${JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, address: user.address, city: user.city, county: user.county, eircode: user.eircode })}
               }, '*');
               window.close();
             } else {
@@ -461,7 +461,7 @@ app.post("/api/submissions", authenticate, upload.array("images", 5), async (req
   const db = getPrisma();
   if (!db) return res.status(500).json({ error: "Database unavailable" });
 
-  const { fullName, email, phone, location, type, category, brand, model, estimatedAge, condition, description, accessories, preferredOutcome, collectionPreference } = req.body;
+  const { fullName, email, phone, location, type, category, brand, model, estimatedAge, condition, description, accessories, preferredOutcome, collectionPreference, collectionDate, estimatedPrice, youtubeUrl, address, city, eircode } = req.body;
   const userId = req.user?.id;
 
   try {
@@ -473,7 +473,10 @@ app.post("/api/submissions", authenticate, upload.array("images", 5), async (req
         fullName,
         email,
         phone,
+        address,
+        city,
         location,
+        eircode,
         type,
         category,
         brand,
@@ -484,6 +487,9 @@ app.post("/api/submissions", authenticate, upload.array("images", 5), async (req
         accessories,
         preferredOutcome,
         collectionPreference,
+        collectionDate: collectionDate ? new Date(collectionDate) : null,
+        estimatedPrice: estimatedPrice ? parseFloat(estimatedPrice) : null,
+        youtubeUrl,
       },
     });
 
@@ -739,6 +745,40 @@ app.get("/api/faq", async (req, res) => {
 
   const faqs = await db.fAQItem.findMany({ orderBy: { order: "asc" } });
   res.json(faqs);
+});
+
+// Get current user profile
+app.get("/api/users/profile", authenticate, async (req: any, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+  try {
+    const user = await db.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, email: true, name: true, role: true, phone: true, address: true, city: true, county: true, eircode: true }
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch profile" });
+  }
+});
+
+// Update user profile
+app.put("/api/users/profile", authenticate, async (req: any, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+  const { name, phone, address, city, county, eircode } = req.body;
+  try {
+    const user = await db.user.update({
+      where: { id: req.user.id },
+      data: { name, phone, address, city, county, eircode },
+      select: { id: true, email: true, name: true, role: true, phone: true, address: true, city: true, county: true, eircode: true }
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: "Failed to update profile" });
+  }
 });
 
 // Contact

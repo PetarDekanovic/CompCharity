@@ -14,7 +14,10 @@ const submissionSchema = z.object({
   fullName: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
   phone: z.string().min(7, "Phone is required"),
-  location: z.string().min(2, "Location is required"),
+  address: z.string().min(5, "Address is required"),
+  city: z.string().min(2, "City is required"),
+  location: z.string().min(2, "County is required"),
+  eircode: z.string().optional(),
   category: z.string().min(1, "Category is required"),
   brand: z.string().min(1, "Brand is required"),
   model: z.string().min(1, "Model is required"),
@@ -24,6 +27,9 @@ const submissionSchema = z.object({
   accessories: z.string().optional(),
   preferredOutcome: z.string().optional(),
   collectionPreference: z.string().min(1, "Preference is required"),
+  collectionDate: z.string().optional(),
+  estimatedPrice: z.number().nullable().optional(),
+  youtubeUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   consent: z.boolean().refine((v) => v === true, "You must consent to proceed"),
 });
 
@@ -61,9 +67,25 @@ export default function SubmissionForm({ type }: Props) {
     resolver: zodResolver(submissionSchema),
     defaultValues: {
       consent: false,
+      fullName: user?.name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      city: user?.city || "",
+      location: user?.county || "",
+      eircode: user?.eircode || "",
     },
   });
 
+  const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const youtubeUrl = watch("youtubeUrl");
+  const youtubeId = youtubeUrl ? getYouTubeId(youtubeUrl) : null;
+  const collectionPreference = watch("collectionPreference");
   const formData = watch();
 
   const handleAnalyze = async () => {
@@ -119,10 +141,10 @@ export default function SubmissionForm({ type }: Props) {
 
   const nextStep = async () => {
     const fields = currentStep === 0 
-      ? ["fullName", "email", "phone", "location"] 
+      ? ["fullName", "email", "phone", "address", "city", "location", "eircode"] 
       : currentStep === 1 
       ? ["category", "brand", "model", "estimatedAge"]
-      : ["condition", "collectionPreference", "description"];
+      : ["condition", "collectionPreference", "description", "collectionDate", "youtubeUrl", "estimatedPrice"];
     
     const isValid = await trigger(fields as any);
     if (isValid) {
@@ -295,13 +317,73 @@ export default function SubmissionForm({ type }: Props) {
                     {errors.phone && <p className="text-xs text-red-500 font-bold">{errors.phone.message}</p>}
                   </div>
                   <div className="space-y-3">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Location</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Street Address</label>
                     <input
-                      {...register("location")}
+                      {...register("address")}
                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="Dublin, Cork, Galway..."
+                      placeholder="Street, Building..."
                     />
+                    {errors.address && <p className="text-xs text-red-500 font-bold">{errors.address.message}</p>}
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">City</label>
+                    <input
+                      {...register("city")}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                      placeholder="e.g. Dublin"
+                    />
+                    {errors.city && <p className="text-xs text-red-500 font-bold">{errors.city.message}</p>}
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">County</label>
+                    <select
+                      {...register("location")}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                    >
+                      <option value="">Select County</option>
+                      <option value="Antrim">Antrim</option>
+                      <option value="Armagh">Armagh</option>
+                      <option value="Carlow">Carlow</option>
+                      <option value="Cavan">Cavan</option>
+                      <option value="Clare">Clare</option>
+                      <option value="Cork">Cork</option>
+                      <option value="Derry">Derry</option>
+                      <option value="Donegal">Donegal</option>
+                      <option value="Down">Down</option>
+                      <option value="Dublin">Dublin</option>
+                      <option value="Fermanagh">Fermanagh</option>
+                      <option value="Galway">Galway</option>
+                      <option value="Kerry">Kerry</option>
+                      <option value="Kildare">Kildare</option>
+                      <option value="Kilkenny">Kilkenny</option>
+                      <option value="Laois">Laois</option>
+                      <option value="Leitrim">Leitrim</option>
+                      <option value="Limerick">Limerick</option>
+                      <option value="Longford">Longford</option>
+                      <option value="Louth">Louth</option>
+                      <option value="Mayo">Mayo</option>
+                      <option value="Meath">Meath</option>
+                      <option value="Monaghan">Monaghan</option>
+                      <option value="Offaly">Offaly</option>
+                      <option value="Roscommon">Roscommon</option>
+                      <option value="Sligo">Sligo</option>
+                      <option value="Tipperary">Tipperary</option>
+                      <option value="Tyrone">Tyrone</option>
+                      <option value="Waterford">Waterford</option>
+                      <option value="Westmeath">Westmeath</option>
+                      <option value="Wexford">Wexford</option>
+                      <option value="Wicklow">Wicklow</option>
+                    </select>
                     {errors.location && <p className="text-xs text-red-500 font-bold">{errors.location.message}</p>}
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Eircode</label>
+                    <input
+                      {...register("eircode")}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium uppercase"
+                      placeholder="e.g. D02 XN52"
+                    />
+                    {errors.eircode && <p className="text-xs text-red-500 font-bold">{errors.eircode.message}</p>}
                   </div>
                 </div>
               </div>
@@ -405,6 +487,59 @@ export default function SubmissionForm({ type }: Props) {
                     </select>
                     {errors.collectionPreference && <p className="text-xs text-red-500 font-bold">{errors.collectionPreference.message}</p>}
                   </div>
+                  {collectionPreference === "Collection" && (
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Preferred Collection Date</label>
+                      <input
+                        type="datetime-local"
+                        {...register("collectionDate")}
+                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                      />
+                      {errors.collectionDate && <p className="text-xs text-red-500 font-bold">{errors.collectionDate.message}</p>}
+                    </div>
+                  )}
+                  {type === "RESALE" && (
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Resale Price (€)</label>
+                      <input
+                         type="number"
+                         {...register("estimatedPrice", { valueAsNumber: true })}
+                         className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                         placeholder="e.g. 150"
+                      />
+                      {errors.estimatedPrice && <p className="text-xs text-red-500 font-bold">{errors.estimatedPrice.message}</p>}
+                      <p className="text-[10px] text-gray-400 font-medium italic">Setting a price gives other buyers a deadline to buy before collection.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Video Demonstration (YouTube URL)</label>
+                  <div className="space-y-4">
+                    <input
+                      {...register("youtubeUrl")}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                    {youtubeId && (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
+                        <img 
+                          src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`} 
+                          alt="Video Thumbnail"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${youtubeId}/0.jpg`;
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                          <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white shadow-xl">
+                            <Sparkles className="w-6 h-6" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {errors.youtubeUrl && <p className="text-xs text-red-500 font-bold">{errors.youtubeUrl.message}</p>}
+                  </div>
                 </div>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
@@ -488,24 +623,43 @@ export default function SubmissionForm({ type }: Props) {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="space-y-6">
-                    <div className="bg-gray-50 p-8 rounded-[32px] space-y-4">
-                      <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Contact</div>
+                    <div className="bg-gray-50 p-8 rounded-[32px] space-y-4 h-full">
+                      <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Contact & Logistics</div>
                       <div className="space-y-2">
                         <div className="text-lg font-bold text-gray-900">{formData.fullName}</div>
                         <div className="text-sm text-gray-500 font-medium">{formData.email}</div>
                         <div className="text-sm text-gray-500 font-medium">{formData.phone}</div>
-                        <div className="text-sm text-gray-500 font-medium">{formData.location}</div>
+                        <div className="pt-2">
+                          <div className="text-sm text-gray-700 font-bold">{formData.address}</div>
+                          <div className="text-sm text-gray-500 font-medium">{formData.city}, {formData.location} {formData.eircode}</div>
+                        </div>
+                        <div className="pt-4 border-t border-gray-100">
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Logistics</div>
+                          <div className="text-sm text-gray-700 font-bold">{formData.collectionPreference}</div>
+                          {formData.collectionDate && (
+                            <div className="text-xs text-blue-600 font-bold mt-1">
+                              Scheduled: {new Date(formData.collectionDate).toLocaleString()}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                   <div className="space-y-6">
-                    <div className="bg-gray-50 p-8 rounded-[32px] space-y-4">
-                      <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Device</div>
+                    <div className="bg-gray-50 p-8 rounded-[32px] space-y-4 h-full">
+                      <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Device & Value</div>
                       <div className="space-y-2">
                         <div className="text-lg font-bold text-gray-900">{formData.brand} {formData.model}</div>
                         <div className="text-sm text-gray-500 font-medium">{formData.category} • {formData.estimatedAge}</div>
-                        <div className="text-sm text-gray-500 font-medium">Condition: {formData.condition}</div>
-                        <div className="text-sm text-gray-500 font-medium">Logistics: {formData.collectionPreference}</div>
+                        <div className="text-sm text-gray-700 font-bold">Condition: {formData.condition}</div>
+                        {type === "RESALE" && formData.estimatedPrice && (
+                          <div className="text-lg font-bold text-green-600 mt-2">
+                            Estimated Price: €{formData.estimatedPrice}
+                          </div>
+                        )}
+                        {formData.youtubeUrl && (
+                          <div className="text-[10px] text-blue-500 font-bold uppercase mt-2">âœ“ Video Demonstration Attached</div>
+                        )}
                       </div>
                     </div>
                   </div>

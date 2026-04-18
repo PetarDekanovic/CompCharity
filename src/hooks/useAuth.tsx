@@ -6,6 +6,11 @@ interface User {
   name: string;
   role: string;
   photoURL?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  county?: string;
+  eircode?: string;
 }
 
 interface AuthContextType {
