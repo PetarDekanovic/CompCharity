@@ -1,49 +1,67 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useState, useEffect, createContext, useContext } from "react";
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  photoURL?: string;
+}
 
 interface AuthContextType {
-  user: any;
+  user: User | null;
   loading: boolean;
-  login: (token: string, userData: any) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
+  const checkAuth = () => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(userStr);
+        setUser(parsedUser);
       } catch (e) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        console.error("AuthProvider: Failed to parse stored user", e);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
       }
+    } else {
+      setUser(null);
     }
     setLoading(false);
-  }, []);
-
-  const login = (token: string, userData: any) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-    toast.success("Welcome back!");
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  useEffect(() => {
+    checkAuth();
+    
+    // Check auth on every focus/storage change
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token' || e.key === 'user') {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const logout = async () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
-    toast.success("Logged out successfully");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
