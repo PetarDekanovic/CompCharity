@@ -1,0 +1,5 @@
+# robots.txt for CompCharity
+User-agent: *
+Allow: /
+
+Sitemap: https://compcharity.com/sitemap.xml
