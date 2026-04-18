@@ -292,53 +292,53 @@ export default function SubmissionForm({ type }: Props) {
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Full Name</label>
                     <input
-                      {...register("fullName")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="John Doe"
+                       {...register("fullName")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="John Doe"
                     />
                     {errors.fullName && <p className="text-xs text-red-500 font-bold">{errors.fullName.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
                     <input
-                      {...register("email")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="john@example.com"
+                       {...register("email")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="john@example.com"
                     />
                     {errors.email && <p className="text-xs text-red-500 font-bold">{errors.email.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
                     <input
-                      {...register("phone")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="+353 8X XXX XXXX"
+                       {...register("phone")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="+353 8X XXX XXXX"
                     />
                     {errors.phone && <p className="text-xs text-red-500 font-bold">{errors.phone.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Street Address</label>
                     <input
-                      {...register("address")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="Street, Building..."
+                       {...register("address")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="Street, Building..."
                     />
                     {errors.address && <p className="text-xs text-red-500 font-bold">{errors.address.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">City</label>
                     <input
-                      {...register("city")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="e.g. Dublin"
+                       {...register("city")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="e.g. Dublin"
                     />
                     {errors.city && <p className="text-xs text-red-500 font-bold">{errors.city.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">County</label>
                     <select
-                      {...register("location")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                       {...register("location")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none text-gray-900"
                     >
                       <option value="">Select County</option>
                       <option value="Antrim">Antrim</option>
@@ -378,11 +378,11 @@ export default function SubmissionForm({ type }: Props) {
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Eircode</label>
-                    <input
-                      {...register("eircode")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium uppercase"
-                      placeholder="e.g. D02 XN52"
-                    />
+                      <input
+                         {...register("eircode")}
+                         className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium uppercase text-gray-900"
+                         placeholder="e.g. D02 XN52"
+                      />
                     {errors.eircode && <p className="text-xs text-red-500 font-bold">{errors.eircode.message}</p>}
                   </div>
                 </div>
@@ -399,8 +399,8 @@ export default function SubmissionForm({ type }: Props) {
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Category</label>
                     <select
-                      {...register("category")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                       {...register("category")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none text-gray-900"
                     >
                       <option value="">Select Category</option>
                       <option value="Laptop">Laptop</option>
@@ -417,26 +417,26 @@ export default function SubmissionForm({ type }: Props) {
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Brand</label>
                     <input
-                      {...register("brand")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="Apple, Dell, HP..."
+                       {...register("brand")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="Apple, Dell, HP..."
                     />
                     {errors.brand && <p className="text-xs text-red-500 font-bold">{errors.brand.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Model</label>
                     <input
-                      {...register("model")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="MacBook Pro 2019, Latitude 5400..."
+                       {...register("model")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="MacBook Pro 2019, Latitude 5400..."
                     />
                     {errors.model && <p className="text-xs text-red-500 font-bold">{errors.model.message}</p>}
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Estimated Age</label>
                     <select
-                      {...register("estimatedAge")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                       {...register("estimatedAge")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none text-gray-900"
                     >
                       <option value="">Select Age</option>
                       <option value="< 1 year">Less than 1 year</option>
@@ -478,8 +478,8 @@ export default function SubmissionForm({ type }: Props) {
                   <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Collection Preference</label>
                     <select
-                      {...register("collectionPreference")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                       {...register("collectionPreference")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none text-gray-900"
                     >
                       <option value="">Select Preference</option>
                       <option value="Collection">Request Collection</option>
@@ -491,10 +491,10 @@ export default function SubmissionForm({ type }: Props) {
                     <div className="space-y-3">
                       <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Preferred Collection Date</label>
                       <input
-                        type="datetime-local"
-                        {...register("collectionDate")}
-                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      />
+                       type="datetime-local"
+                       {...register("collectionDate")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                    />
                       {errors.collectionDate && <p className="text-xs text-red-500 font-bold">{errors.collectionDate.message}</p>}
                     </div>
                   )}
@@ -504,7 +504,7 @@ export default function SubmissionForm({ type }: Props) {
                       <input
                          type="number"
                          {...register("estimatedPrice", { valueAsNumber: true })}
-                         className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                         className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
                          placeholder="e.g. 150"
                       />
                       {errors.estimatedPrice && <p className="text-xs text-red-500 font-bold">{errors.estimatedPrice.message}</p>}
@@ -517,9 +517,9 @@ export default function SubmissionForm({ type }: Props) {
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Video Demonstration (YouTube URL)</label>
                   <div className="space-y-4">
                     <input
-                      {...register("youtubeUrl")}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="https://www.youtube.com/watch?v=..."
+                       {...register("youtubeUrl")}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="https://www.youtube.com/watch?v=..."
                     />
                     {youtubeId && (
                       <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
@@ -570,10 +570,10 @@ export default function SubmissionForm({ type }: Props) {
                     />
                     
                     <textarea
-                      {...register("description")}
-                      rows={4}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
-                      placeholder="Describe any scratches, missing keys, or performance issues..."
+                       {...register("description")}
+                       rows={4}
+                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-900"
+                       placeholder="Describe any scratches, missing keys, or performance issues..."
                     />
                   </div>
                   {errors.description && <p className="text-xs text-red-500 font-bold">{errors.description.message}</p>}

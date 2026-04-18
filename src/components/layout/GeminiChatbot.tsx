@@ -154,7 +154,7 @@ const GeminiChatbot = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your message..."
-                  className="w-full pl-6 pr-16 py-4 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-medium focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
+                  className="w-full pl-6 pr-16 py-4 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-medium text-gray-900 focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                 />
                 <button 
                   type="submit"
