@@ -19,7 +19,7 @@ export const generateChatResponse = async (history: { role: string; parts: { tex
   if (!ai) throw new Error("AI service not initialized");
   
   const response = await ai.models.generateContent({
-    model: "gemini-flash-latest",
+    model: "gemini-3-flash-preview",
     contents: [
       ...history,
       { role: "user", parts: [{ text: message }] }
@@ -37,7 +37,7 @@ export const transcribeAudio = async (base64Audio: string, mimeType: string) => 
   if (!ai) throw new Error("AI service not initialized");
 
   const response = await ai.models.generateContent({
-    model: "gemini-flash-latest",
+    model: "gemini-3-flash-preview",
     contents: {
       parts: [
         { text: "Transcribe this voice message accurately. If the user is describing a device they want to donate or have collected, focus on capturing the brand, model, condition, and their location if mentioned." },
@@ -72,7 +72,7 @@ export const findDropOffPoints = async (location: string) => {
   if (!ai) throw new Error("AI service not initialized");
 
   const response = await ai.models.generateContent({
-    model: "gemini-flash-latest",
+    model: "gemini-3-flash-preview",
     contents: `Find tech recycling drop-off points or CompCharity hubs near ${location} in Ireland.`,
     config: {
       tools: [{ googleMaps: {} }]
@@ -89,7 +89,7 @@ export const analyzeDeviceDescription = async (description: string) => {
   if (!ai) throw new Error("AI service not initialized");
 
   const response = await ai.models.generateContent({
-    model: "gemini-flash-latest",
+    model: "gemini-3-flash-preview",
     contents: `Analyze this device description and suggest the most likely category (Laptop, Smartphone, Tablet, Desktop, Other) and a brief condition assessment (Excellent, Good, Fair, Poor). Description: "${description}"`,
     config: {
       responseMimeType: "application/json",
@@ -127,7 +127,7 @@ export const generateBlogKeyTakeaways = async (content: string) => {
   if (!ai) throw new Error("AI service not initialized");
 
   const response = await ai.models.generateContent({
-    model: "gemini-flash-latest",
+    model: "gemini-3-flash-preview",
     contents: `Summarize the following blog post into 3-4 key takeaways for a quick read. Content: ${content}`,
     config: {
       responseMimeType: "application/json",

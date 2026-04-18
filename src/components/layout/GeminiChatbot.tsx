@@ -68,7 +68,7 @@ const GeminiChatbot = () => {
             initial={{ opacity: 0, y: 100, scale: 0.8, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 100, scale: 0.8, filter: "blur(10px)" }}
-            className="fixed bottom-32 right-8 w-[400px] h-[600px] bg-white rounded-[40px] shadow-2xl shadow-blue-200/50 border border-gray-100 flex flex-col z-50 overflow-hidden"
+            className="fixed bottom-32 right-8 w-[400px] h-[600px] bg-white dark:bg-gray-900 rounded-[40px] shadow-2xl shadow-blue-200/50 border border-gray-100 dark:border-gray-800 flex flex-col z-50 overflow-hidden"
           >
             {/* Header */}
             <div className="p-6 bg-gray-900 text-white flex items-center justify-between relative overflow-hidden">
@@ -100,12 +100,12 @@ const GeminiChatbot = () => {
             >
               {messages.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
-                  <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center">
-                    <Bot className="w-8 h-8 text-gray-300" />
+                  <div className="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-3xl flex items-center justify-center">
+                    <Bot className="w-8 h-8 text-gray-300 dark:text-gray-600" />
                   </div>
                   <div className="max-w-[200px]">
-                    <p className="text-sm font-bold text-gray-900">Hello! I'm your CompCharity assistant.</p>
-                    <p className="text-xs text-gray-500 mt-1">Ask me anything about donating or reselling your tech!</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">Hello! I'm your CompCharity assistant.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Ask me anything about donating or reselling your tech!</p>
                   </div>
                 </div>
               )}
@@ -117,14 +117,14 @@ const GeminiChatbot = () => {
                   className={`flex items-start gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                 >
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    msg.role === "user" ? "bg-gray-100" : "bg-blue-600"
+                    msg.role === "user" ? "bg-gray-100 dark:bg-gray-800" : "bg-blue-600"
                   }`}>
-                    {msg.role === "user" ? <User className="w-4 h-4 text-gray-500" /> : <Sparkles className="w-4 h-4 text-white" />}
+                    {msg.role === "user" ? <User className="w-4 h-4 text-gray-500 dark:text-gray-400" /> : <Sparkles className="w-4 h-4 text-white" />}
                   </div>
                   <div className={`max-w-[80%] p-4 rounded-3xl text-sm font-medium leading-relaxed ${
                     msg.role === "user" 
-                      ? "bg-gray-900 text-white rounded-tr-none" 
-                      : "bg-gray-50 text-gray-700 rounded-tl-none border border-gray-100"
+                      ? "bg-gray-900 dark:bg-blue-600 text-white rounded-tr-none" 
+                      : "bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-100 rounded-tl-none border border-gray-100 dark:border-gray-700"
                   }`}>
                     {msg.parts[0].text}
                   </div>
@@ -139,22 +139,22 @@ const GeminiChatbot = () => {
                   <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-3xl rounded-tl-none border border-gray-100">
-                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-3xl rounded-tl-none border border-gray-100 dark:border-gray-700">
+                    <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
                   </div>
                 </motion.div>
               )}
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-6 border-t border-gray-50 bg-white">
+            <form onSubmit={handleSend} className="p-6 border-t border-gray-50 dark:border-gray-800 bg-white dark:bg-gray-900">
               <div className="relative flex items-center">
                 <input 
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your message..."
-                  className="w-full pl-6 pr-16 py-4 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-medium text-gray-900 focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
+                  className="w-full pl-6 pr-16 py-4 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent rounded-2xl text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 transition-all placeholder-gray-400 dark:placeholder-gray-600"
                 />
                 <button 
                   type="submit"
