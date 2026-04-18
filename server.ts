@@ -108,6 +108,21 @@ const getPrisma = () => {
               });
               log(">>> ADMIN USER SEEDED <<<");
             }
+
+            // Seed FAQs if none exist
+            const faqCount = await prisma!.fAQItem.count();
+            if (faqCount === 0) {
+              log(">>> SEEDING INITIAL FAQS <<<");
+              await prisma!.fAQItem.createMany({
+                data: [
+                  { question: "How many laptops end up in landfills in Ireland?", answer: "An estimated 150,000 laptops are discarded every year in Ireland. Many of these are still functional or could be easily refurbished.", order: 1 },
+                  { question: "Who receives the refurbished devices?", answer: "We partner with schools and community centers to identify the 45,000+ students in Ireland who currently do not have access to a dedicated computer for their studies.", order: 2 },
+                  { question: "Is my data safe when I donate a device?", answer: "Absolutely. We use industry-standard military-grade software to perform multiple-pass data overwrites on every storage device we receive. You will receive a certificate of data destruction.", order: 3 },
+                  { question: "Do you accept broken or very old laptops?", answer: "Yes! Even if a device is beyond repair, we ensure that every component is recycled responsibly via certified e-waste partners, preventing hazardous materials from entering the environment.", order: 4 },
+                  { question: "How can I support CompCharity besides donating tech?", answer: "You can purchase refurbished tech from our marketplace. Every purchase directly funds our logistics, warehousing, and the refurbishment of devices for students in need.", order: 5 },
+                ]
+              });
+            }
           } catch (seedErr: any) {
             log(`Seed Error: ${seedErr.message}`);
           }
