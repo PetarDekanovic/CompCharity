@@ -342,10 +342,12 @@ function AdminSidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-100 h-screen sticky top-0 flex flex-col p-6">
+    <div className="w-64 bg-white dark:bg-gray-950 border-r border-gray-100 dark:border-gray-900 h-screen sticky top-0 flex flex-col p-6 transition-colors">
       <div className="mb-10 px-2">
         <h2 className="text-xs font-bold text-blue-600 uppercase tracking-widest">Admin Panel</h2>
-        <div className="text-xl font-extrabold text-gray-900">CompCharity</div>
+        <div className="text-xl font-extrabold text-gray-900 dark:text-white">
+          Comp<span className="text-blue-600">Charity</span>
+        </div>
       </div>
       <nav className="space-y-2 flex-grow">
         {menuItems.map((item) => {

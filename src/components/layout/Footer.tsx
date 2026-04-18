@@ -16,16 +16,18 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-gray-100 pt-24 pb-12">
+    <footer className="bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-900 pt-24 pb-12 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 mb-24">
           {/* Brand */}
           <div className="lg:col-span-4 space-y-8">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="bg-blue-600 p-2 rounded-2xl shadow-lg shadow-blue-100">
+              <div className="bg-blue-600 p-2 rounded-2xl shadow-lg shadow-blue-100 dark:shadow-none">
                 <Laptop className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold tracking-tighter text-gray-900">CompCharity</span>
+              <span className="text-2xl font-bold tracking-tighter text-gray-900 dark:text-white">
+                Comp<span className="text-blue-600">Charity</span>
+              </span>
             </Link>
             <p className="text-lg leading-relaxed text-gray-500 font-medium">
               Empowering communities by refurbishing discarded technology and donating it to those in need. Bridging the digital divide across Ireland.

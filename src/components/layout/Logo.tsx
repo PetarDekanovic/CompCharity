@@ -92,7 +92,7 @@ const Logo: React.FC<LogoProps> = ({ className = "", showText = true, size = "md
       </div>
       
       {showText && (
-        <span className={`font-black tracking-tighter text-gray-900 ${sizes[size].text}`}>
+        <span className={`font-black tracking-tighter text-gray-900 dark:text-white ${sizes[size].text}`}>
           Comp<span className="text-blue-600">Charity</span>
         </span>
       )}

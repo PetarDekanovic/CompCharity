@@ -147,7 +147,9 @@ const Auth = () => {
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-none group-hover:scale-110 transition-transform">
                 <Laptop className="w-5 h-5" />
               </div>
-              <span className="text-xl font-bold tracking-tighter text-gray-900 dark:text-white">CompCharity</span>
+              <span className="text-xl font-bold tracking-tighter text-gray-900 dark:text-white">
+                Comp<span className="text-blue-600">Charity</span>
+              </span>
             </Link>
 
             <div className="mb-12">
