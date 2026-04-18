@@ -286,7 +286,7 @@ function AdminBlog() {
             <div key={post.id} className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden group flex flex-col">
               <div className="aspect-video relative overflow-hidden">
                 <img 
-                  src={post.featuredImage || "https://picsum.photos/seed/tech/800/600"} 
+                  src={post.featuredImage || "https://picsum.photos/seed/gaming-pc/800/600"} 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                   referrerPolicy="no-referrer"
                 />

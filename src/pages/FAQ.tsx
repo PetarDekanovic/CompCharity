@@ -199,7 +199,7 @@ const FAQ = () => {
             <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="group relative rounded-[40px] overflow-hidden aspect-[4/5] bg-gray-100">
                 <img 
-                  src="https://picsum.photos/seed/tech-rework/800/1000" 
+                  src="https://picsum.photos/seed/laptop-circuit/800/1000" 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                   referrerPolicy="no-referrer"
                   alt="Refurbishment process"
@@ -211,7 +211,7 @@ const FAQ = () => {
               </div>
               <div className="group relative rounded-[40px] overflow-hidden aspect-[4/5] bg-gray-100">
                 <img 
-                  src="https://picsum.photos/seed/tech-impact/801/1000" 
+                  src="https://picsum.photos/seed/tablet-learning/801/1000" 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                   referrerPolicy="no-referrer"
                   alt="Tech impact"

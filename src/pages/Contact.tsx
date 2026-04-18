@@ -139,7 +139,7 @@ const Contact = () => {
             <div className="relative">
               <div className="aspect-[4/5] rounded-[64px] overflow-hidden shadow-2xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&q=80" 
+                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80" 
                   alt="Contact us"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"

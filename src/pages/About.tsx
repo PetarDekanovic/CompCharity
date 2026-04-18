@@ -408,8 +408,8 @@ const About = () => {
             <div className="relative">
               <div className="aspect-video rounded-[48px] overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80" 
-                  alt="Team collaboration"
+                  src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80" 
+                  alt="Modern laptop and study space"
                   className="w-full h-full object-cover opacity-60"
                   referrerPolicy="no-referrer"
                 />
