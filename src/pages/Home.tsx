@@ -1,8 +1,27 @@
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
-import { Laptop, Smartphone, Tablet, Monitor, ArrowRight, CheckCircle, Users, Globe, Recycle, ShieldCheck, Heart } from "lucide-react";
+import { Laptop, Smartphone, Tablet, Monitor, ArrowRight, CheckCircle, Users, Globe, Recycle, ShieldCheck, Heart, ShoppingBag, Loader2 } from "lucide-react";
 
 export default function Home() {
+  const [marketplaceItems, setMarketplaceItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMarketplace = async () => {
+      try {
+        const response = await fetch("/api/marketplace");
+        const data = await response.json();
+        setMarketplaceItems(data.slice(0, 4)); // Show only first 4
+      } catch (error) {
+        console.error("Failed to fetch marketplace:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMarketplace();
+  }, []);
+
   const stats = [
     { label: "Devices Donated", value: "1,200+", icon: Laptop },
     { label: "Students Helped", value: "850+", icon: Users },
@@ -294,6 +313,90 @@ export default function Home() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Marketplace Section (New Addition) */}
+      <section className="py-32 bg-[var(--background)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest mb-6 border border-blue-100 dark:border-blue-800">
+                <ShoppingBag className="w-4 h-4" />
+                <span>Shop Certified Tech</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">Featured Market</h2>
+              <p className="text-xl text-gray-500 dark:text-gray-400 font-medium">Browse high-quality refurbished devices. Every purchase supports our mission to provide tech for all students.</p>
+            </div>
+            <Link 
+              to="/marketplace" 
+              className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold hover:underline mb-2 group"
+            >
+              View Full Marketplace <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Warming up the market...</p>
+            </div>
+          ) : marketplaceItems.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {marketplaceItems.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Link 
+                    to={`/marketplace/${item.id}`}
+                    className="group block bg-white dark:bg-gray-900 rounded-[40px] overflow-hidden border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-none hover:shadow-2xl transition-all"
+                  >
+                    <div className="aspect-square bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                      {item.images && item.images[0] ? (
+                        <img 
+                          src={item.images[0].url} 
+                          alt={item.model} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Laptop className="w-16 h-16 text-gray-300 dark:text-gray-700" />
+                        </div>
+                      )}
+                      <div className="absolute top-4 right-4">
+                        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-4 py-2 rounded-2xl text-lg font-bold text-blue-600 dark:text-blue-400 border border-blue-50 dark:border-blue-900 shadow-lg">
+                          €{item.estimatedPrice}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-8">
+                      <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{item.category}</div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-1">
+                        {item.listingTitle || `${item.brand} ${item.model}`}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-6">
+                        {item.brand} • {item.model}
+                      </p>
+                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-sm">
+                        View Item <ArrowRight className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-[64px] p-20 text-center border-2 border-dashed border-gray-200 dark:border-gray-800">
+              <ShoppingBag className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Marketplace is coming soon</h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">We are currently refurbishing the latest batch of donations. Check back soon for high-quality tech at charity prices.</p>
+            </div>
+          )}
         </div>
       </section>
 

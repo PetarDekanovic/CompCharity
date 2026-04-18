@@ -464,7 +464,7 @@ app.post("/api/submissions", authenticate, upload.array("images", 5), async (req
   const db = getPrisma();
   if (!db) return res.status(500).json({ error: "Database unavailable" });
 
-  const { fullName, email, phone, location, type, category, brand, model, estimatedAge, condition, description, accessories, preferredOutcome, collectionPreference, collectionDate, estimatedPrice, youtubeUrl, address, city, eircode } = req.body;
+  const { fullName, email, phone, location, type, category, brand, model, listingTitle, estimatedAge, condition, description, accessories, preferredOutcome, collectionPreference, collectionDate, estimatedPrice, youtubeUrl, address, city, eircode } = req.body;
   const userId = req.user?.id;
 
   try {
@@ -484,6 +484,7 @@ app.post("/api/submissions", authenticate, upload.array("images", 5), async (req
         category,
         brand,
         model,
+        listingTitle,
         estimatedAge,
         condition,
         description,
@@ -530,6 +531,46 @@ app.get("/api/submissions/my", authenticate, async (req: any, res) => {
   }
 });
 
+// Marketplace API
+app.get("/api/marketplace", async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+  try {
+    const items = await db.submission.findMany({
+      where: {
+        type: "RESALE",
+        status: "APPROVED"
+      },
+      include: { images: true },
+      orderBy: { createdAt: "desc" }
+    });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch marketplace items" });
+  }
+});
+
+app.get("/api/marketplace/:id", async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+  try {
+    const item = await db.submission.findUnique({
+      where: { id: req.params.id },
+      include: { images: true }
+    });
+    
+    if (!item || item.status !== "APPROVED" || item.type !== "RESALE") {
+      return res.status(404).json({ error: "Item not found" });
+    }
+    
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch item details" });
+  }
+});
+
 // Blog
 app.get("/api/blog", async (req, res) => {
   const db = getPrisma();
@@ -565,6 +606,27 @@ app.get("/api/admin/submissions", authenticate, isAdmin, async (req, res) => {
     orderBy: { createdAt: "desc" },
   });
   res.json(submissions);
+});
+
+app.patch("/api/admin/submissions/:id/details", authenticate, isAdmin, async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+
+  const { id } = req.params;
+  const { listingTitle, estimatedPrice } = req.body;
+
+  try {
+    const submission = await db.submission.update({
+      where: { id },
+      data: {
+        listingTitle,
+        estimatedPrice: estimatedPrice ? parseFloat(estimatedPrice) : null,
+      },
+    });
+    res.json(submission);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.patch("/api/admin/submissions/:id/status", authenticate, isAdmin, async (req, res) => {

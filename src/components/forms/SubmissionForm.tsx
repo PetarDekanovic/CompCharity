@@ -21,6 +21,7 @@ const submissionSchema = z.object({
   category: z.string().min(1, "Category is required"),
   brand: z.string().min(1, "Brand is required"),
   model: z.string().min(1, "Model is required"),
+  listingTitle: z.string().optional(),
   estimatedAge: z.string().min(1, "Age is required"),
   condition: z.string().min(1, "Condition is required"),
   description: z.string().min(10, "Please provide more detail"),
@@ -499,17 +500,29 @@ export default function SubmissionForm({ type }: Props) {
                     </div>
                   )}
                   {type === "RESALE" && (
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Resale Price (€)</label>
-                      <input
-                         type="number"
-                         {...register("estimatedPrice", { valueAsNumber: true })}
-                         className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
-                         placeholder="e.g. 150"
-                      />
-                      {errors.estimatedPrice && <p className="text-xs text-red-500 font-bold">{errors.estimatedPrice.message}</p>}
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">Setting a price gives other buyers a deadline to buy before collection.</p>
-                    </div>
+                    <>
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Marketplace Listing Title</label>
+                        <input
+                          {...register("listingTitle")}
+                          className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
+                          placeholder="e.g. Ultra Fast Gaming Laptop - Mint Condition"
+                        />
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">This title will be shown to potential buyers in the marketplace.</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Resale Price (€)</label>
+                        <input
+                          type="number"
+                          {...register("estimatedPrice", { valueAsNumber: true })}
+                          className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border-2 border-transparent focus:bg-white dark:focus:bg-gray-800 focus:border-blue-500 outline-none transition-all font-medium text-gray-900 dark:text-white"
+                          placeholder="e.g. 150"
+                        />
+                        {errors.estimatedPrice && <p className="text-xs text-red-500 font-bold">{errors.estimatedPrice.message}</p>}
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">Setting a price gives other buyers a deadline to buy before collection.</p>
+                      </div>
+                    </>
                   )}
                 </div>
 

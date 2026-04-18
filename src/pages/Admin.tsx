@@ -390,6 +390,9 @@ function AdminSubmissions({ submissions, refreshSubmissions, formatDate }: { sub
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [summarizingId, setSummarizingId] = useState<string | null>(null);
+  const [selectedSub, setSelectedSub] = useState<any>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({ listingTitle: "", estimatedPrice: 0 });
 
   const updateStatus = async (id: string, status: string) => {
     const note = prompt("Add a note for the user (optional):");
@@ -400,9 +403,36 @@ function AdminSubmissions({ submissions, refreshSubmissions, formatDate }: { sub
       });
       toast.success(`Status updated to ${status}`);
       refreshSubmissions();
+      if (selectedSub?.id === id) {
+        setSelectedSub((prev: any) => ({ ...prev, status }));
+      }
     } catch (error: any) {
       toast.error(error.message);
     }
+  };
+
+  const handleUpdateDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch(`/api/admin/submissions/${selectedSub.id}/details`, {
+        method: "PATCH",
+        body: JSON.stringify(editForm),
+      });
+      toast.success("Listing details updated!");
+      setEditMode(false);
+      refreshSubmissions();
+      setSelectedSub((prev: any) => ({ ...prev, ...editForm }));
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const startEdit = () => {
+    setEditForm({
+      listingTitle: selectedSub.listingTitle || "",
+      estimatedPrice: selectedSub.estimatedPrice || 0,
+    });
+    setEditMode(true);
   };
 
   const handleSummarize = async (submission: any) => {
@@ -554,7 +584,7 @@ function AdminSubmissions({ submissions, refreshSubmissions, formatDate }: { sub
                     <button onClick={() => updateStatus(sub.id, "REJECTED")} className="p-2 text-red-600 hover:bg-red-50 rounded-xl" title="Reject">
                       <XCircle className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl">
+                    <button onClick={() => setSelectedSub(sub)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-xl" title="View Details">
                       <Eye className="w-4 h-4" />
                     </button>
                   </div>
@@ -564,6 +594,210 @@ function AdminSubmissions({ submissions, refreshSubmissions, formatDate }: { sub
           </tbody>
         </table>
       </div>
+
+      {/* Submission Detail Modal */}
+      <AnimatePresence>
+        {selectedSub && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setSelectedSub(null); setEditMode(false); }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-4xl bg-white dark:bg-gray-950 rounded-[40px] overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh]"
+            >
+              <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tighter text-gray-900">{selectedSub.listingTitle || `${selectedSub.brand} ${selectedSub.model}`}</h2>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Ref: {selectedSub.referenceNumber} • {selectedSub.type}</p>
+                </div>
+                <button 
+                  onClick={() => { setSelectedSub(null); setEditMode(false); }}
+                  className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all border border-gray-100 shadow-sm"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto p-12 custom-scrollbar">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  <div className="space-y-8">
+                    {/* Device Specs */}
+                    <div className="bg-gray-50 rounded-3xl p-8 space-y-6">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Device Specifications</h3>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Category</p>
+                          <p className="text-sm font-bold text-gray-900">{selectedSub.category}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Condition</p>
+                          <p className="text-sm font-bold text-gray-900">{selectedSub.condition}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Estimated Age</p>
+                          <p className="text-sm font-bold text-gray-900">{selectedSub.estimatedAge}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">County</p>
+                          <p className="text-sm font-bold text-gray-900">{selectedSub.location}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">User Description</h3>
+                      <div className="p-6 bg-white border border-gray-100 rounded-3xl text-sm text-gray-600 leading-relaxed font-medium">
+                        {selectedSub.description}
+                      </div>
+                    </div>
+
+                    {/* Images */}
+                    {selectedSub.images && selectedSub.images.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Photos ({selectedSub.images.length})</h3>
+                        <div className="grid grid-cols-3 gap-4">
+                          {selectedSub.images.map((img: string, i: number) => (
+                            <div key={i} className="aspect-square rounded-2xl overflow-hidden shadow-sm hover:scale-105 transition-transform">
+                              <img src={img} className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-8">
+                    {/* Marketplace Control */}
+                    {selectedSub.type === 'RESALE' && (
+                      <div className="bg-blue-50/50 rounded-3xl p-8 border border-blue-100 space-y-6">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest">Marketplace Listing</h3>
+                          {!editMode && (
+                            <button 
+                              onClick={startEdit}
+                              className="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline"
+                            >
+                              <Edit className="w-3 h-3" /> Edit
+                            </button>
+                          )}
+                        </div>
+
+                        {editMode ? (
+                          <form onSubmit={handleUpdateDetails} className="space-y-6">
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-bold text-gray-400 uppercase">Public Listing Title</label>
+                              <input 
+                                required
+                                value={editForm.listingTitle}
+                                onChange={(e) => setEditForm({...editForm, listingTitle: e.target.value})}
+                                className="w-full px-5 py-3 rounded-xl border border-blue-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-bold text-gray-400 uppercase">Resale Price (€)</label>
+                              <input 
+                                required
+                                type="number"
+                                value={editForm.estimatedPrice}
+                                onChange={(e) => setEditForm({...editForm, estimatedPrice: parseFloat(e.target.value)})}
+                                className="w-full px-5 py-3 rounded-xl border border-blue-100 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold"
+                              />
+                            </div>
+                            <div className="flex gap-3">
+                              <button 
+                                type="button"
+                                onClick={() => setEditMode(false)}
+                                className="flex-1 px-4 py-3 rounded-xl bg-white text-gray-500 font-bold text-xs"
+                              >
+                                Cancel
+                              </button>
+                              <button 
+                                type="submit"
+                                className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-lg shadow-blue-100"
+                              >
+                                Save Changes
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="space-y-6">
+                            <div>
+                               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Current Listing Title</p>
+                               <p className="text-lg font-bold text-gray-900">{selectedSub.listingTitle || "Not set. Using Brand Model."}</p>
+                            </div>
+                            <div>
+                               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Market Price</p>
+                               <p className="text-3xl font-extrabold text-blue-600">€{selectedSub.estimatedPrice || '0'}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Contact Info */}
+                    <div className="bg-gray-50 rounded-3xl p-8 space-y-6">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">User Contact</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <Users className="w-4 h-4 text-gray-400" />
+                          <span className="font-bold">{selectedSub.fullName}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <Mail className="w-4 h-4 text-gray-400" />
+                          <span>{selectedSub.email}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <Phone className="w-4 h-4 text-gray-400" />
+                          <span>{selectedSub.phone}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Admin Actions */}
+                    <div className="space-y-4 pt-6">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Take Action</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        {selectedSub.status !== 'APPROVED' && (
+                          <button 
+                            onClick={() => updateStatus(selectedSub.id, "APPROVED")}
+                            className="bg-green-600 text-white p-5 rounded-3xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-green-700 transition-all shadow-xl shadow-green-100"
+                          >
+                            <CheckCircle className="w-5 h-5" /> Approve Listing
+                          </button>
+                        )}
+                        {selectedSub.status !== 'REJECTED' && (
+                          <button 
+                            onClick={() => updateStatus(selectedSub.id, "REJECTED")}
+                            className="bg-red-50 text-red-600 p-5 rounded-3xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-red-100 transition-all"
+                          >
+                            <XCircle className="w-5 h-5" /> Reject
+                          </button>
+                        )}
+                        {selectedSub.status !== 'COMPLETED' && (
+                          <button 
+                            onClick={() => updateStatus(selectedSub.id, "COMPLETED")}
+                            className="bg-gray-900 text-white p-5 rounded-3xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-black transition-all col-span-2"
+                          >
+                            <Sparkles className="w-5 h-5" /> Mark as Sold/Completed
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
