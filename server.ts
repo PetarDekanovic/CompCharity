@@ -124,6 +124,9 @@ const getPrisma = () => {
   return prisma;
 };
 
+// Initialize Prisma immediately
+getPrisma();
+
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET
