@@ -215,9 +215,60 @@ const getPrisma = () => {
                   { content: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "Motivation" },
                   { content: "Talk is cheap. Show me the code.", author: "Linus Torvalds", category: "Technology" },
                   { content: "Your device is a tool to change the world. Use it wisely.", author: "CompCharity", category: "Mission" },
-                  { content: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", category: "Leadership" }
+                  { content: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", category: "Leadership" },
+                  { content: "Stay hungry, stay foolish.", author: "Steve Jobs", category: "Motivation" },
+                  { content: "Knowledge is the power to change the world.", author: "Nelson Mandela", category: "Education" },
+                  { content: "The best way to predict the future is to create it.", author: "Peter Drucker", category: "Vision" },
+                  { content: "Code is like humor. When you have to explain it, it’s bad.", author: "Cory House", category: "Technology" },
+                  { content: "Simplicity is the soul of efficiency.", author: "Austin Freeman", category: "Technology" },
+                  { content: "First, solve the problem. Then, write the code.", author: "John Johnson", category: "Technology" },
+                  { content: "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.", author: "Martin Fowler", category: "Quality" },
+                  { content: "The digital divide is not just about technology, it's about opportunity.", author: "CompCharity", category: "Mission" },
+                  { content: "Every refurbished device is a bridge to someone's dream.", author: "CompCharity", category: "Mission" },
+                  { content: "Work hard in silence, let your success be your noise.", author: "Frank Ocean", category: "Motivation" },
+                  { content: "Don't let yesterday take up too much of today.", author: "Will Rogers", category: "Focus" },
+                  { content: "Life begins at the end of your comfort zone.", author: "Neale Donald Walsch", category: "Growth" },
+                  { content: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill", category: "Resilience" },
+                  { content: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt", category: "Hope" },
+                  { content: "Quality is not an act, it is a habit.", author: "Aristotle", category: "Excellence" },
+                  { content: "Logic will get you from A to B. Imagination will take you everywhere.", author: "Albert Einstein", category: "Creativity" },
+                  { content: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs", category: "Autonomy" }
                 ]
               });
+            }
+
+            // Seed Blog Posts if none exist
+            const blogCount = await prisma!.blogPost.count();
+            if (blogCount === 0) {
+              log(">>> SEEDING BLOG POSTS (LOGS) <<<");
+              const admin = await prisma!.user.findUnique({ where: { email: "petar.dekanovic@gmail.com" } });
+              if (admin) {
+                await prisma!.blogPost.create({
+                  data: {
+                    title: "First Refurbishment Log",
+                    slug: "first-refurbishment-log",
+                    excerpt: "Watching this old MacBook come back to life is pure magic.",
+                    content: "<p>We just finished our first batch of refurbishments for the month. This MacBook Pro from 2015 is still a beast!</p>",
+                    featuredImage: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80",
+                    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Example YouTube
+                    published: true,
+                    authorId: admin.id
+                  }
+                });
+
+                await prisma!.blogPost.create({
+                  data: {
+                    title: "Tech Tip: TikTok Edition",
+                    slug: "tech-tip-tiktok",
+                    excerpt: "Quick hack for cleaning your laptop screen safely.",
+                    content: "<p>Check out our latest quick tip on how to keep your gear fresh.</p>",
+                    featuredImage: "https://images.unsplash.com/photo-1588702547919-26089e690924?auto=format&fit=crop&q=80",
+                    videoUrl: "https://www.tiktok.com/@howtocomputer/video/7212345678901234567", // Fake TikTok for demo structure
+                    published: true,
+                    authorId: admin.id
+                  }
+                });
+              }
             }
           } catch (seedErr: any) {
             log(`Seed Error: ${seedErr.message}`);
@@ -800,7 +851,7 @@ app.post("/api/admin/blog", authenticate, isAdmin, async (req: any, res) => {
   const db = getPrisma();
   if (!db) return res.status(500).json({ error: "Database unavailable" });
 
-  const { title, slug, content, excerpt, featuredImage, published, categoryId } = req.body;
+  const { title, slug, content, excerpt, featuredImage, videoUrl, published, categoryId } = req.body;
   const post = await db.blogPost.create({
     data: {
       title,
@@ -808,6 +859,7 @@ app.post("/api/admin/blog", authenticate, isAdmin, async (req: any, res) => {
       content,
       excerpt,
       featuredImage,
+      videoUrl,
       published: published ?? true,
       authorId: req.user.id,
       categoryId,
@@ -820,10 +872,10 @@ app.patch("/api/admin/blog/:id", authenticate, isAdmin, async (req, res) => {
   const db = getPrisma();
   if (!db) return res.status(500).json({ error: "Database unavailable" });
 
-  const { title, slug, content, excerpt, featuredImage, published, categoryId } = req.body;
+  const { title, slug, content, excerpt, featuredImage, videoUrl, published, categoryId } = req.body;
   const post = await db.blogPost.update({
     where: { id: req.params.id },
-    data: { title, slug, content, excerpt, featuredImage, published, categoryId },
+    data: { title, slug, content, excerpt, featuredImage, videoUrl, published, categoryId },
   });
   res.json(post);
 });
@@ -954,6 +1006,68 @@ app.put("/api/users/profile", authenticate, async (req: any, res) => {
     res.json(user);
   } catch (error) {
     res.status(400).json({ error: "Failed to update profile" });
+  }
+});
+
+// Diagnostics & Setup
+app.get("/api/system/check", async (req, res) => {
+  const db = getPrisma();
+  res.json({
+    db: !!db,
+    isHealthy: isDbHealthy,
+    env: process.env.NODE_ENV,
+    time: new Date().toISOString()
+  });
+});
+
+app.get("/api/system/force-setup", async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+  
+  try {
+    // Check for admin
+    const admin = await db.user.findUnique({ where: { email: "petar.dekanovic@gmail.com" } });
+    if (!admin) {
+      await db.user.create({
+        data: {
+          email: "petar.dekanovic@gmail.com",
+          name: "Admin User",
+          role: "ADMIN"
+        }
+      });
+    }
+    
+    // Clear and reseeding quotes as requested for "all quotes"
+    await db.wiseQuote.deleteMany({});
+    await db.wiseQuote.createMany({
+      data: [
+        { content: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "Motivation" },
+        { content: "Talk is cheap. Show me the code.", author: "Linus Torvalds", category: "Technology" },
+        { content: "Your device is a tool to change the world. Use it wisely.", author: "CompCharity", category: "Mission" },
+        { content: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", category: "Leadership" },
+        { content: "Stay hungry, stay foolish.", author: "Steve Jobs", category: "Motivation" },
+        { content: "Knowledge is the power to change the world.", author: "Nelson Mandela", category: "Education" },
+        { content: "The best way to predict the future is to create it.", author: "Peter Drucker", category: "Vision" },
+        { content: "Code is like humor. When you have to explain it, it’s bad.", author: "Cory House", category: "Technology" },
+        { content: "Simplicity is the soul of efficiency.", author: "Austin Freeman", category: "Technology" },
+        { content: "First, solve the problem. Then, write the code.", author: "John Johnson", category: "Technology" },
+        { content: "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.", author: "Martin Fowler", category: "Quality" },
+        { content: "The digital divide is not just about technology, it's about opportunity.", author: "CompCharity", category: "Mission" },
+        { content: "Every refurbished device is a bridge to someone's dream.", author: "CompCharity", category: "Mission" },
+        { content: "Work hard in silence, let your success be your noise.", author: "Frank Ocean", category: "Motivation" },
+        { content: "Don't let yesterday take up too much of today.", author: "Will Rogers", category: "Focus" },
+        { content: "Life begins at the end of your comfort zone.", author: "Neale Donald Walsch", category: "Growth" },
+        { content: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill", category: "Resilience" },
+        { content: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt", category: "Hope" },
+        { content: "Quality is not an act, it is a habit.", author: "Aristotle", category: "Excellence" },
+        { content: "Logic will get you from A to B. Imagination will take you everywhere.", author: "Albert Einstein", category: "Creativity" },
+        { content: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs", category: "Autonomy" }
+      ]
+    });
+
+    res.json({ success: true, message: "System setup forced and quotes re-seeded." });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

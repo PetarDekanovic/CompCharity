@@ -11,11 +11,56 @@ interface Post {
   excerpt: string;
   image?: string;
   featuredImage?: string;
-  youtubeVideoId?: string;
+  videoUrl?: string;
   createdAt: any;
   category: any;
   author: any;
 }
+
+const getYouTubeId = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
+const getTikTokId = (url: string) => {
+  const regExp = /tiktok\.com\/.*video\/(\d+)/;
+  const match = url.match(regExp);
+  return match ? match[1] : null;
+};
+
+const VideoEmbed = ({ url, title, isFeatured = false }: { url: string; title: string; isFeatured?: boolean }) => {
+  const ytId = getYouTubeId(url);
+  const ttId = getTikTokId(url);
+
+  if (ytId) {
+    return (
+      <iframe
+        className="w-full h-full"
+        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0`}
+        title={title}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  if (ttId) {
+    return (
+      <iframe
+        className="w-full h-full"
+        src={`https://www.tiktok.com/embed/v2/${ttId}?lang=en-US&autoplay=1`}
+        title={title}
+        frameBorder="0"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  return null;
+};
 
 const Blog = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -93,15 +138,19 @@ const Blog = () => {
                 className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
               >
                 <div className="lg:col-span-7">
-                  <div className="aspect-[16/9] rounded-[64px] overflow-hidden shadow-2xl shadow-gray-200 dark:shadow-none group-hover:scale-[1.02] transition-transform duration-700 relative">
-                    <img 
-                      src={featuredPost.image || featuredPost.featuredImage || `https://picsum.photos/seed/${featuredPost.slug}/1200/800`}
-                      alt={featuredPost.title}
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    {featuredPost.youtubeVideoId && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                  <div className="aspect-[16/9] rounded-[64px] overflow-hidden shadow-2xl shadow-gray-200 dark:shadow-none group-hover:scale-[1.02] transition-transform duration-700 relative bg-black">
+                    {featuredPost.videoUrl ? (
+                      <VideoEmbed url={featuredPost.videoUrl} title={featuredPost.title} isFeatured />
+                    ) : (
+                      <img 
+                        src={featuredPost.image || featuredPost.featuredImage || `https://picsum.photos/seed/${featuredPost.slug}/1200/800`}
+                        alt={featuredPost.title}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+                    {featuredPost.videoUrl && !featuredPost.videoUrl.includes('autoplay') && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors pointer-events-none">
                         <div className="w-20 h-20 bg-white/90 dark:bg-gray-900/90 rounded-full flex items-center justify-center shadow-2xl">
                           <Zap className="w-10 h-10 text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400" />
                         </div>
@@ -148,19 +197,16 @@ const Blog = () => {
                 className="group"
               >
                 <Link to={`/blog/${post.slug}`}>
-                  <div className="aspect-[4/3] rounded-[48px] overflow-hidden shadow-xl shadow-gray-100 dark:shadow-none mb-8 group-hover:scale-[1.05] transition-transform duration-700 relative">
-                    <img 
-                      src={post.image || post.featuredImage || `https://picsum.photos/seed/${post.slug}/800/600`}
-                      alt={post.title}
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    {post.youtubeVideoId && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-colors">
-                        <div className="w-12 h-12 bg-white/90 dark:bg-gray-900/90 rounded-full flex items-center justify-center shadow-lg">
-                          <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400" />
-                        </div>
-                      </div>
+                  <div className="aspect-[4/3] rounded-[48px] overflow-hidden shadow-xl shadow-gray-100 dark:shadow-none mb-8 group-hover:scale-[1.05] transition-transform duration-700 relative bg-black">
+                    {post.videoUrl ? (
+                      <VideoEmbed url={post.videoUrl} title={post.title} />
+                    ) : (
+                      <img 
+                        src={post.image || post.featuredImage || `https://picsum.photos/seed/${post.slug}/800/600`}
+                        alt={post.title}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
                     )}
                   </div>
                   <div className="space-y-4">

@@ -114,7 +114,7 @@ const LearningHub = () => {
             <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/10 blur-[100px] -z-0" />
             <div className="relative z-10 flex flex-col items-center text-center">
               <Quote className="w-16 h-16 text-blue-600 mb-12 opacity-50" />
-              <div className="h-[200px] flex items-center justify-center">
+              <div className="min-h-[250px] flex items-center justify-center">
                 <AnimatePresence mode="wait">
                   {quotes.length > 0 && (
                     <motion.div

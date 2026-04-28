@@ -14,12 +14,57 @@ interface Post {
   content: string;
   image?: string;
   featuredImage?: string;
-  youtubeVideoId?: string;
+  videoUrl?: string;
   createdAt: any;
   category: any;
   author: any;
   keyTakeaways?: string[];
 }
+
+const getYouTubeId = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
+const getTikTokId = (url: string) => {
+  const regExp = /tiktok\.com\/.*video\/(\d+)/;
+  const match = url.match(regExp);
+  return match ? match[1] : null;
+};
+
+const VideoEmbed = ({ url, title }: { url: string; title: string }) => {
+  const ytId = getYouTubeId(url);
+  const ttId = getTikTokId(url);
+
+  if (ytId) {
+    return (
+      <iframe
+        className="w-full h-full"
+        src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&modestbranding=1&rel=0`}
+        title={title}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  if (ttId) {
+    return (
+      <iframe
+        className="w-full h-full"
+        src={`https://www.tiktok.com/embed/v2/${ttId}?lang=en-US&autoplay=1`}
+        title={title}
+        frameBorder="0"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  return null;
+};
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -185,15 +230,8 @@ const BlogPost = () => {
           transition={{ duration: 1 }}
           className="aspect-video rounded-[64px] overflow-hidden shadow-2xl shadow-gray-200 dark:shadow-none border border-gray-100 dark:border-gray-800 bg-black"
         >
-          {post.youtubeVideoId ? (
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube.com/embed/${post.youtubeVideoId}?autoplay=0&rel=0`}
-              title={post.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+          {post.videoUrl ? (
+            <VideoEmbed url={post.videoUrl} title={post.title} />
           ) : (
             <img
               src={post.image || post.featuredImage || `https://picsum.photos/seed/${post.slug}/1920/1080`}

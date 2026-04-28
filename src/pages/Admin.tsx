@@ -63,7 +63,7 @@ function AdminBlog() {
     content: "",
     excerpt: "",
     featuredImage: "",
-    youtubeUrl: "",
+    videoUrl: "",
     category: "Technology",
     readTime: "5 min read",
     published: true,
@@ -77,7 +77,7 @@ function AdminBlog() {
       setIsEditing(true);
       setCurrentPost(null);
       setFormData({
-        title: "", slug: "", content: "", excerpt: "", featuredImage: "", youtubeUrl: "", category: "Technology", readTime: "5 min read", published: true
+        title: "", slug: "", content: "", excerpt: "", featuredImage: "", videoUrl: "", category: "Technology", readTime: "5 min read", published: true
       });
     }
   }, [location.search]);
@@ -102,8 +102,8 @@ function AdminBlog() {
     
     let finalImage = formData.featuredImage;
 
-    if (formData.youtubeUrl) {
-      const vidId = getYouTubeId(formData.youtubeUrl);
+    if (formData.videoUrl) {
+      const vidId = getYouTubeId(formData.videoUrl);
       if (vidId && !finalImage) {
         finalImage = getYouTubeThumbnail(vidId);
       }
@@ -150,7 +150,7 @@ function AdminBlog() {
       content: post.content || "",
       excerpt: post.excerpt || "",
       featuredImage: post.featuredImage || "",
-      youtubeUrl: post.youtubeUrl || "",
+      videoUrl: post.videoUrl || "",
       category: post.category || "Technology",
       readTime: post.readTime || "5 min read",
       published: post.published ?? true,
@@ -201,12 +201,12 @@ function AdminBlog() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">YouTube URL (Optional)</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Video URL (YouTube or TikTok)</label>
                 <input
                   type="text"
-                  value={formData.youtubeUrl}
-                  onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
-                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={formData.videoUrl}
+                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                  placeholder="https://www.youtube.com/watch?v=... or TikTok link"
                   className="w-full px-5 py-3 rounded-2xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
               </div>
@@ -290,7 +290,7 @@ function AdminBlog() {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                   referrerPolicy="no-referrer"
                 />
-                {post.youtubeUrl && (
+                {post.videoUrl && (
                   <div className="absolute top-4 right-4 bg-red-600 text-white p-2 rounded-xl shadow-lg">
                     <Zap className="w-4 h-4" />
                   </div>
