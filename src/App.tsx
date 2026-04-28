@@ -19,6 +19,8 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
+import LearningHub from "./pages/LearningHub";
+import QuizPage from "./pages/QuizPage";
 import PageTransition from "./components/layout/PageTransition";
 import GeminiChatbot from "./components/layout/GeminiChatbot";
 import { useAuth } from "./hooks/useAuth";
@@ -61,6 +63,8 @@ function AnimatedRoutes() {
         <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
         <Route path="/marketplace" element={<PageTransition><Marketplace /></PageTransition>} />
         <Route path="/marketplace/:id" element={<PageTransition><ProductDetail /></PageTransition>} />
+        <Route path="/learning" element={<PageTransition><LearningHub /></PageTransition>} />
+        <Route path="/quiz/:id" element={<PageTransition><QuizPage /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/dashboard" element={<ProtectedRoute><PageTransition><Dashboard /></PageTransition></ProtectedRoute>} />
         <Route path="/admin/*" element={<ProtectedRoute adminOnly><PageTransition><Admin /></PageTransition></ProtectedRoute>} />

@@ -123,6 +123,102 @@ const getPrisma = () => {
                 ]
               });
             }
+
+            // Seed Learning Paths if none exist
+            const pathCount = await prisma!.learningPath.count();
+            if (pathCount === 0) {
+              log(">>> SEEDING LEARNING PATHS <<<");
+              await prisma!.learningPath.create({
+                data: {
+                  title: "React Development",
+                  description: "Master the most popular frontend library and build dynamic UIs.",
+                  icon: "Code",
+                  quizzes: {
+                    create: [
+                      {
+                        title: "React Foundations",
+                        description: "Test your knowledge of JSX, components, and basic hooks.",
+                        questions: [
+                          {
+                            question: "What is JSX?",
+                            options: ["A style sheet", "A syntax extension for JavaScript", "A Java library", "A database engine"],
+                            answerIndex: 1,
+                            explanation: "JSX allows us to write HTML-like code within JavaScript."
+                          },
+                          {
+                            question: "Which hook is used for state management in functional components?",
+                            options: ["useEffect", "useContext", "useState", "useRef"],
+                            answerIndex: 2,
+                            explanation: "useState is the primary hook for adding local state to components."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              });
+
+              await prisma!.learningPath.create({
+                data: {
+                  title: "Web & App Design",
+                  description: "Learn HTML, CSS, and modern web architecture.",
+                  icon: "Globe",
+                  quizzes: {
+                    create: [
+                      {
+                        title: "Web Basics",
+                        description: "The core concepts of the modern web.",
+                        questions: [
+                          {
+                            question: "What does HTML stand for?",
+                            options: ["Hyper Text Markup Language", "Home Tool Markup Language", "High Text Machine Language", "None of the above"],
+                            answerIndex: 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              });
+
+              await prisma!.learningPath.create({
+                data: {
+                  title: "Mobile Development",
+                  description: "Build apps for iOS and Android.",
+                  icon: "Smartphone",
+                  quizzes: {
+                    create: [
+                      {
+                        title: "Mobile App Concepts",
+                        description: "Introduction to native and cross-platform apps.",
+                        questions: [
+                          {
+                            question: "Which framework is used for cross-platform apps with React?",
+                            options: ["React Mobile", "React Native", "React Flutter", "SwiftUI"],
+                            answerIndex: 1,
+                            explanation: "React Native allows building mobile apps using React and JavaScript."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              });
+            }
+
+            // Seed Wise Quotes if none exist
+            const quoteCount = await prisma!.wiseQuote.count();
+            if (quoteCount === 0) {
+              log(">>> SEEDING WISE QUOTES <<<");
+              await prisma!.wiseQuote.createMany({
+                data: [
+                  { content: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "Motivation" },
+                  { content: "Talk is cheap. Show me the code.", author: "Linus Torvalds", category: "Technology" },
+                  { content: "Your device is a tool to change the world. Use it wisely.", author: "CompCharity", category: "Mission" },
+                  { content: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", category: "Leadership" }
+                ]
+              });
+            }
           } catch (seedErr: any) {
             log(`Seed Error: ${seedErr.message}`);
           }
@@ -871,6 +967,36 @@ app.post("/api/contact", async (req, res) => {
     data: { name, email, phone, subject, message, type },
   });
   res.json(contact);
+});
+
+// Learning & Quizzes
+app.get("/api/learning/paths", async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+  const paths = await db.learningPath.findMany({
+    include: { quizzes: true },
+    orderBy: { createdAt: "asc" }
+  });
+  res.json(paths);
+});
+
+app.get("/api/learning/quotes", async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+  const quotes = await db.wiseQuote.findMany({
+    orderBy: { createdAt: "desc" }
+  });
+  res.json(quotes);
+});
+
+app.get("/api/learning/quizzes/:id", async (req, res) => {
+  const db = getPrisma();
+  if (!db) return res.status(500).json({ error: "Database unavailable" });
+  const quiz = await db.quiz.findUnique({
+    where: { id: req.params.id },
+    include: { learningPath: true }
+  });
+  res.json(quiz);
 });
 
 // --- PRODUCTION SERVING ---

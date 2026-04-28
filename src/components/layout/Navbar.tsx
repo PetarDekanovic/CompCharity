@@ -22,6 +22,7 @@ export default function Navbar() {
     { name: "Donate", path: "/donate" },
     { name: "Resell", path: "/resell" },
     { name: "Market", path: "/marketplace" },
+    { name: "Learning", path: "/learning" },
     { name: "Blog", path: "/blog" },
     { name: "FAQ", path: "/faq" },
     { name: "Contact", path: "/contact" },

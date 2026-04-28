@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
-import { Laptop, Smartphone, Tablet, Monitor, ArrowRight, CheckCircle, Users, Globe, Recycle, ShieldCheck, Heart, ShoppingBag, Loader2 } from "lucide-react";
+import { Laptop, Smartphone, Tablet, Monitor, ArrowRight, CheckCircle, Users, Globe, Recycle, ShieldCheck, Heart, ShoppingBag, Loader2, Sparkles, Code } from "lucide-react";
 
 export default function Home() {
   const [marketplaceItems, setMarketplaceItems] = useState<any[]>([]);
@@ -397,6 +397,64 @@ export default function Home() {
               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">We are currently refurbishing the latest batch of donations. Check back soon for high-quality tech at charity prices.</p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Student Learning Hub Teaser (New Interactive Section) */}
+      <section className="py-24 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/5 blur-[120px] -z-0" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest mb-8 border border-blue-100 dark:border-blue-800">
+                  <Sparkles className="w-4 h-4" />
+                  <span>For Students</span>
+                </div>
+                <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter text-gray-900 dark:text-white mb-8 leading-[0.9]">
+                  Master Tech with <br />
+                  <span className="text-blue-600 italic font-serif">Wise Quizzes.</span>
+                </h2>
+                <p className="text-xl text-gray-500 dark:text-gray-400 font-medium mb-12 leading-relaxed max-w-xl">
+                  Replicated from our <span className="text-gray-900 dark:text-white font-bold italic">WiseFit</span> legacy: Read daily wise quotes and test your skills in React, Web, and Mobile development.
+                </p>
+                <Link
+                  to="/learning"
+                  className="inline-flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-2xl font-bold text-lg hover:bg-blue-600 dark:hover:bg-blue-400 hover:text-white transition-all shadow-xl"
+                >
+                  Enter Learning Hub <ArrowRight className="w-5 h-5" />
+                </Link>
+              </motion.div>
+            </div>
+            <div className="flex-1 w-full">
+              <div className="grid grid-cols-2 gap-6 scale-90 lg:scale-100">
+                {[
+                  { title: "React", icon: Code, color: "blue", delay: 0.1 },
+                  { title: "Mobile", icon: Smartphone, color: "teal", delay: 0.2 },
+                  { title: "Design", icon: Globe, color: "indigo", delay: 0.3 },
+                  { title: "Quotes", icon: Heart, color: "red", delay: 0.4 },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: item.delay }}
+                    viewport={{ once: true }}
+                    className="bg-white dark:bg-gray-900 p-8 rounded-[40px] shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-center text-center group hover:border-blue-500 transition-colors"
+                  >
+                    <div className={`w-16 h-16 rounded-2xl bg-${item.color}-50 dark:bg-${item.color}-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                      <item.icon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">{item.title}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

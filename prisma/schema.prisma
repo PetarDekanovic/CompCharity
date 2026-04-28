@@ -138,3 +138,30 @@ model Testimonial {
   image     String?
   createdAt DateTime @default(now())
 }
+
+model LearningPath {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String   // Lucide icon name
+  quizzes     Quiz[]
+  createdAt   DateTime @default(now())
+}
+
+model Quiz {
+  id             String        @id @default(cuid())
+  title          String
+  description    String?
+  learningPathId String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id])
+  questions      Json         // Array of { question: string, options: string[], answerIndex: number, explanation?: string }
+  createdAt      DateTime     @default(now())
+}
+
+model WiseQuote {
+  id        String   @id @default(cuid())
+  content   String
+  author    String
+  category  String?  // Motivation, Technology, etc.
+  createdAt DateTime @default(now())
+}
