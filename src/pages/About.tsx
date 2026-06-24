@@ -18,7 +18,8 @@ import {
   Presentation,
   BarChart3,
   Lightbulb,
-  Handshake
+  Handshake,
+  Download
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Logo from "../components/layout/Logo";
@@ -99,12 +100,23 @@ const About = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm"
+                className="p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between h-full"
               >
-                <Presentation className="w-8 h-8 text-blue-600 mb-4" />
-                <p className="text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-                  A professional, corporate, yet emotional commitment to transforming redundant technology into opportunity.
-                </p>
+                <div>
+                  <Presentation className="w-8 h-8 text-blue-600 mb-4" />
+                  <p className="text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed mb-6">
+                    A professional, corporate, yet emotional commitment to transforming redundant technology into opportunity.
+                  </p>
+                </div>
+                <a 
+                  href="https://compcharity.org/wp-content/uploads/2026/06/CompCharity-Presentation-for-Dargan-Forum-8thApril26.pptx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold rounded-2xl text-sm transition-all shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Presentation (PPTX)
+                </a>
               </motion.div>
             </div>
           </div>
@@ -420,6 +432,39 @@ const About = () => {
                   <div className="text-4xl font-bold">2027</div>
                   <div className="text-xs font-bold uppercase tracking-widest opacity-60">Target Scale</div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Forum Presentation Resource Section */}
+      <section className="py-24 border-t border-gray-100 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[48px] p-12 md:p-16 text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-8 space-y-6">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-xs font-bold uppercase tracking-widest">
+                  <Presentation className="w-4 h-4" /> Dargan Forum Materials
+                </span>
+                <h2 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
+                  Download the Official CompCharity Presentation
+                </h2>
+                <p className="text-lg text-blue-100 max-w-2xl font-medium leading-relaxed">
+                  Access the complete slides from our presentation at the Dargan Forum. Learn about our model, our social and environmental impact, and how we are bridging the digital divide in Ireland.
+                </p>
+              </div>
+              <div className="lg:col-span-4 flex justify-start lg:justify-end">
+                <a
+                  href="https://compcharity.org/wp-content/uploads/2026/06/CompCharity-Presentation-for-Dargan-Forum-8thApril26.pptx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 bg-white text-blue-600 hover:bg-blue-50 font-bold rounded-2xl text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <Download className="w-6 h-6" />
+                  Download Presentation (PPTX)
+                </a>
               </div>
             </div>
           </div>
